@@ -34,10 +34,10 @@ small{color:#666}.total{font-size:22px;font-weight:800}.notice{border-left:4px s
 <section id="dashboard" class="page">
 <h2>Today</h2>
 <div class="grid">
- <div class="card clickable" onclick="openTagJobs(2)"><div id="due2" class="metric">0</div><div class="label">Tags due in 2 days</div></div>
- <div class="card clickable" onclick="openTagJobs(1)"><div id="due1" class="metric warn">0</div><div class="label">Tags due tomorrow</div></div>
- <div class="card clickable" onclick="openTagJobs(0)"><div id="due0" class="metric danger">0</div><div class="label">Tags due today</div></div>
- <div class="card clickable" onclick="openTagJobs('overdue')"><div id="over" class="metric danger">0</div><div class="label">Overdue tags</div></div>
+ <div class="card"><div id="due2" class="metric">0</div><div class="label">Tags due in 2 days</div></div>
+ <div class="card"><div id="due1" class="metric warn">0</div><div class="label">Tags due tomorrow</div></div>
+ <div class="card"><div id="due0" class="metric danger">0</div><div class="label">Tags due today</div></div>
+ <div class="card"><div id="over" class="metric danger">0</div><div class="label">Overdue tags</div></div>
 </div>
 <div class="card"><h3>My responsibilities</h3><small>Tap one to add or view its log.</small><div id="taskList"></div></div>
 <div class="card notice"><b>Rule:</b> enter information once and carry it from site visit → live scaffold → inspections → strike.</div>
@@ -51,7 +51,7 @@ small{color:#666}.total{font-size:22px;font-weight:800}.notice{border-left:4px s
 <div class="two"><div><label>Erection / last inspection date</label><input id="rdate" type="date"></div><div><label>Inspector</label><select id="rins"><option>JC</option><option>CF</option><option>Both</option></select></div></div>
 <label>Notes</label><textarea id="rnotes"></textarea><br><button class="primary" onclick="addScaffold()">Add live scaffold</button>
 </div>
-<div id="filterBanner" class="card hidden"></div><div id="scaffolds"></div>
+<div id="scaffolds"></div>
 </section>
 
 <section id="visit" class="page hidden">
@@ -133,21 +133,14 @@ function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&l
 function save(){localStorage.setItem('telnikdb',JSON.stringify(db));render()}
 function nav(){navEl=document.getElementById('nav');navEl.innerHTML=tabs.map((t,i)=>`<button class="tab ${i?'':'active'}" onclick="show('${t[0]}',this)">${t[1]}</button>`).join('')}
 function show(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');render()}
-let scaffoldFilter='all';
 function today(){return new Date().toISOString().slice(0,10)}
-function openTagJobs(filter){scaffoldFilter=filter;show('register',document.querySelectorAll('.tab')[1])}
-function clearTagFilter(){scaffoldFilter='all';render()}
-function mapsUrl(address){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(address||'')}
-function driveTo(address){if(!address)return alert('Add an address to this job first');window.location.href=mapsUrl(address)}
 function daysUntil(s){let a=new Date();a.setHours(0,0,0,0);let b=new Date(s+'T00:00:00');return Math.round((b-a)/86400000)}
 function nextDate(s){let d=new Date(s+'T00:00:00');d.setDate(d.getDate()+7);return d.toISOString().slice(0,10)}
 function render(){
  let ds=db.scaffolds.map(s=>daysUntil(nextDate(s.date)));
  due2.textContent=ds.filter(x=>x==2).length;due1.textContent=ds.filter(x=>x==1).length;due0.textContent=ds.filter(x=>x==0).length;over.textContent=ds.filter(x=>x<0).length;
  taskList.innerHTML=db.tasks.map((t,i)=>`<div class="item clickable" onclick="toggleLog(${i})"><b>${esc(t.name)}</b> <span class="pill">${esc(t.owner)}</span><span class="right">›</span><br><small>${esc(t.freq)} • ${t.logs.length} log${t.logs.length==1?'':'s'}</small><div id="tasklog${i}" class="logbox hidden" onclick="event.stopPropagation()"><div class="two"><div><label>Date</label><input id="ld${i}" type="date" value="${today()}"></div><div><label>Job / site</label><input id="lj${i}"></div></div><label>Notes</label><textarea id="ln${i}"></textarea><button class="primary" onclick="addTaskLog(${i})">Add log</button>${t.logs.slice().reverse().map(l=>`<div class="item"><b>${esc(l.date)}</b>${l.job?' • '+esc(l.job):''}<br><small>${esc(l.notes||'')}</small></div>`).join('')}</div></div>`).join('');
- let filtered=db.scaffolds.map((s,i)=>({s,i,d:daysUntil(nextDate(s.date))})).filter(x=>scaffoldFilter==='all'||scaffoldFilter==='overdue'? (scaffoldFilter==='all'||x.d<0) : x.d===scaffoldFilter);
- let fb=document.getElementById('filterBanner');if(scaffoldFilter==='all'){fb.classList.add('hidden')}else{fb.classList.remove('hidden');fb.innerHTML=`<b>Showing ${scaffoldFilter==='overdue'?'overdue tags':scaffoldFilter===0?'tags due today':scaffoldFilter===1?'tags due tomorrow':'tags due in 2 days'}</b> <button class="secondary right" onclick="clearTagFilter()">Show all</button>`}
- scaffolds.innerHTML=filtered.map(({s,i,d})=>{let nd=nextDate(s.date),st=d<0?`<span class="danger">OVERDUE ${-d}d</span>`:d==0?'<span class="danger">DUE TODAY</span>':d==1?'<span class="warn">DUE TOMORROW</span>':`due in ${d}d`;return `<div class="card"><b>${esc(s.name)}</b> <span class="pill">${esc(s.ins||'JC')}</span><br><small>${esc(s.address||'')}${s.client?' • '+esc(s.client):''}</small>${s.notes?`<div class="item">${esc(s.notes)}</div>`:''}<div class="item">Next inspection: <b>${nd}</b> — ${st}</div><button class="primary" onclick="inspect(${i})">Tag Updated Today</button> <button class="secondary" onclick="driveTo('${esc(s.address||s.name).replace(/&#39;/g,\"\'\")}')">🗺 Drive there</button> <button class="secondary" onclick="removeScaff(${i})">Remove</button></div>`}).join('')||'<div class="card"><b>No jobs in this group 👍</b></div>';
+ scaffolds.innerHTML=db.scaffolds.map((s,i)=>{let nd=nextDate(s.date),d=daysUntil(nd),st=d<0?`<span class="danger">OVERDUE ${-d}d</span>`:d==0?'<span class="danger">DUE TODAY</span>':d==1?'<span class="warn">DUE TOMORROW</span>':`due in ${d}d`;return `<div class="card"><b>${esc(s.name)}</b> <span class="pill">${esc(s.ins||'JC')}</span><br><small>${esc(s.address||'')}${s.client?' • '+esc(s.client):''}</small>${s.notes?`<div class="item">${esc(s.notes)}</div>`:''}<div class="item">Next inspection: <b>${nd}</b> — ${st}</div><button class="primary" onclick="inspect(${i})">Tag Updated Today</button> <button class="secondary" onclick="removeScaff(${i})">Remove</button></div>`}).join('');
  visits.innerHTML=db.visits.map((v,i)=>`<div class="card"><b>${esc(v.job)}</b>${v.client?' • '+esc(v.client):''}<br><small>${esc(v.vehicle)} • ${esc(v.len||'?')}m × ${esc(v.height||'?')}m • ${esc(v.lifts||'?')} lifts</small><div class="item">${(v.checks||[]).map(esc).join(' • ')}</div>${v.notes?`<div class="item">${esc(v.notes)}</div>`:''}<button class="primary" onclick="activateVisit(${i})">Job Active</button> <button class="secondary" onclick="removeVisit(${i})">Remove</button></div>`).join('');
  allTasks.innerHTML=db.tasks.map((t,i)=>`<div class="card"><b>${esc(t.name)}</b> <span class="pill">${esc(t.owner)}</span><br><small>${esc(t.freq)}${t.due?' • '+esc(t.due):''}</small><br><button class="secondary" onclick="toggleTask(${i})">${t.done?'Reopen':'Complete'}</button></div>`).join('');
  ideasList.innerHTML=db.ideas.map((x,i)=>`<div class="card"><b>${esc(x.name)}</b><br><small>${esc(x.date)}</small>${x.notes?`<div class="item">${esc(x.notes)}</div>`:''}<button class="dangerbtn" onclick="removeIdea(${i})">Remove</button></div>`).join('');
