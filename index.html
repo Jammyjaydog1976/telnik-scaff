@@ -118,6 +118,7 @@ function render(){
  visits.innerHTML=db.visits.map(v=>`<div class="card"><b>${v.job}</b><br><small>${v.vehicle} • ${v.len||'?'}m × ${v.height||'?'}m • ${v.lifts||'?'} lifts</small><div class="item">${v.checks.join(' • ')}</div></div>`).join('');
  allTasks.innerHTML=db.tasks.map((t,i)=>`<div class="card"><b>${t.name}</b> <span class="pill">${t.owner}</span><br><small>${t.freq}${t.due?' • '+t.due:''}</small><br><button class="secondary" onclick="toggleTask(${i})">${t.done?'Reopen':'Complete'}</button></div>`).join('');
 }
+ function showOverdue(){show('register');scaffolds.innerHTML=db.scaffolds.map((s,i)=>({s,i,d:daysUntil(nextDate(s.date))})).filter(x=>x.d<0).map(x=>`<div class="card"><b>${x.s.name}</b><br><small>${x.s.address||''}</small><br><span class="danger">OVERDUE ${Math.abs(x.d)} day${Math.abs(x.d)==1?'':'s'}</span><br><br><button class="primary" onclick="window.open('https://maps.apple.com/?q='+encodeURIComponent(x.s.address||x.s.name),'_blank')">🗺️ Maps</button> <button class="secondary" onclick="inspect(${x.i})">Tag updated</button></div>`).join('')||'<div class="card">No overdue tags 👍</div>';}
 function addScaffold(){if(!rname.value||!rdate.value)return alert('Add job/site and date');db.scaffolds.push({name:rname.value,client:rclient.value,address:raddress.value,date:rdate.value,ins:rins.value,notes:rnotes.value});save();rname.value=rclient.value=raddress.value=rnotes.value=''}
 function inspect(i){db.scaffolds[i].date=new Date().toISOString().slice(0,10);save()}
 function removeScaff(i){db.scaffolds.splice(i,1);save()}
