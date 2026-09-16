@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Telnik Scaff</title>
+<style>
+:root{--bg:#f4f4f2;--card:#fff;--ink:#222;--orange:#d9822b;--dark:#30343a;--red:#b42318;--amber:#b54708;--green:#067647}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--dark);color:white;padding:calc(14px + env(safe-area-inset-top)) 18px 14px;position:sticky;top:0;z-index:5}
+header b{font-size:20px}.sub{font-size:12px;opacity:.75}.wrap{max-width:900px;margin:auto;padding:14px 14px 90px}
+nav{display:flex;gap:7px;overflow:auto;padding:8px 0 14px}.tab{border:0;border-radius:999px;padding:10px 13px;background:#ddd;white-space:nowrap;font-weight:700}.tab.active{background:var(--orange);color:white}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:11px;box-shadow:0 1px 4px #0001}
+.metric{font-size:29px;font-weight:800}.label{font-size:12px;color:#666}.danger{color:var(--red)}.warn{color:var(--amber)}.good{color:var(--green)}
+h2{margin:8px 0 12px}h3{margin:3px 0 10px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input,select,textarea{width:100%;padding:11px;border:1px solid #ccc;border-radius:9px;font-size:16px;background:white}label{display:block;font-size:12px;font-weight:700;margin:9px 0 4px}
+button.primary{background:var(--orange);color:white;border:0;border-radius:9px;padding:11px 14px;font-weight:800}
+button.secondary{background:#e7e7e7;border:0;border-radius:9px;padding:10px 12px;font-weight:700}
+.item{border-top:1px solid #eee;padding:10px 0}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eee;font-size:11px;font-weight:800}
+.hidden{display:none}.checks label{font-size:15px;font-weight:500;display:flex;gap:9px;align-items:flex-start}.checks input{width:auto;margin-top:3px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+small{color:#666}.total{font-size:22px;font-weight:800}.notice{border-left:4px solid var(--orange);padding-left:10px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header><b>TELNIK SCAFF</b><div class="sub">Scaffold management • V1 working prototype</div></header>
+<div class="wrap">
+<nav id="nav"></nav>
+
+<section id="dashboard" class="page">
+<h2>Today</h2>
+<div class="grid">
+ <div class="card"><div id="due2" class="metric">0</div><div class="label">Tags due in 2 days</div></div>
+ <div class="card"><div id="due1" class="metric warn">0</div><div class="label">Tags due tomorrow</div></div>
+ <div class="card"><div id="due0" class="metric danger">0</div><div class="label">Tags due today</div></div>
+ <div class="card"><div id="over" class="metric danger">0</div><div class="label">Overdue tags</div></div>
+</div>
+<div class="card"><h3>My responsibilities</h3><div id="taskList"></div></div>
+<div class="card notice"><b>Rule:</b> information is entered once and follows the job from site visit → price → quote → live scaffold → inspections → strike.</div>
+</section>
+
+<section id="register" class="page hidden">
+<h2>Scaffold Register</h2>
+<div class="card">
+<div class="two"><div><label>Job / site</label><input id="rname"></div><div><label>Client</label><input id="rclient"></div></div>
+<label>Address</label><input id="raddress">
+<div class="two"><div><label>Erection / last inspection date</label><input id="rdate" type="date"></div><div><label>Inspector</label><select id="rins"><option>JC</option><option>CF</option><option>Both</option></select></div></div>
+<label>Notes</label><textarea id="rnotes"></textarea><br><button class="primary" onclick="addScaffold()">Add live scaffold</button>
+</div>
+<div id="scaffolds"></div>
+</section>
+
+<section id="visit" class="page hidden">
+<h2>New Job / Site Visit</h2>
+<div class="card">
+<label>Job / address</label><input id="vjob">
+<div class="checks">
+<label><input type="checkbox" class="vcheck" value="Ground checked">Ground / ground conditions checked</label>
+<label><input type="checkbox" class="vcheck" value="Obstructions checked">Any obstructions identified</label>
+<label><input type="checkbox" class="vcheck" value="Power cables checked">Overhead / nearby power cables checked</label>
+<label><input type="checkbox" class="vcheck" value="Neighbours considered">Need to speak to next-door neighbours?</label>
+<label><input type="checkbox" class="vcheck" value="Tight spots measured">Measurements taken of tight/restricted spots</label>
+<label><input type="checkbox" class="vcheck" value="Vehicle access checked">Vehicle access checked</label>
+</div>
+<label>Vehicle required</label><select id="vvehicle"><option>18t lorry</option><option>Transit</option><option>Either</option><option>Needs review</option></select>
+<div class="three"><div><label>Length (m)</label><input id="vlen" type="number" step=".1"></div><div><label>Height (m)</label><input id="vheight" type="number" step=".1"></div><div><label>Lifts</label><input id="vlifts" type="number" min="1"></div></div>
+<label>Notes / hazards / neighbour details</label><textarea id="vnotes"></textarea>
+<br><button class="primary" onclick="saveVisit()">Save site visit</button>
+</div><div id="visits"></div>
+</section>
+
+<section id="costing" class="page hidden">
+<h2>Pricing & Job Costing</h2>
+<div class="card">
+<p><b>Ballpark pricing calculator</b><br><small>Editable assumptions for now — we’ll replace these with Telnik’s actual pricing rules.</small></p>
+<div class="three"><div><label>Length (m)</label><input id="clen" type="number" value="10"></div><div><label>Height (m)</label><input id="cheight" type="number" value="6"></div><div><label>Lifts</label><input id="clifts" type="number" value="2"></div></div>
+<div class="two"><div><label>Estimated gang days</label><input id="cdays" type="number" step=".5" value="1"></div><div><label>Vehicle</label><select id="cveh"><option>18t lorry</option><option>Transit</option></select></div></div>
+<div class="two"><div><label>Labour cost / gang day (£)</label><input id="clab" type="number" value="850"></div><div><label>Vehicle & fuel (£)</label><input id="cvehicle" type="number" value="120"></div></div>
+<div class="two"><div><label>Overhead allowance / day (£)</label><input id="coverhead" type="number" value="400"></div><div><label>Target margin (%)</label><input id="cmargin" type="number" value="40"></div></div>
+<button class="primary" onclick="calc()">Calculate ballpark</button>
+<div id="calcOut" class="item"></div>
+</div>
+</section>
+
+<section id="tasks" class="page hidden">
+<h2>Management Tasks</h2>
+<div class="card">
+<div class="two"><div><label>Task</label><input id="tname"></div><div><label>Owner</label><select id="towner"><option>JC</option><option>CF</option><option>Both</option></select></div></div>
+<div class="two"><div><label>Frequency</label><select id="tfreq"><option>One-off</option><option>Daily</option><option>Weekly</option><option>Monthly</option></select></div><div><label>Due date</label><input id="tdue" type="date"></div></div>
+<button class="primary" onclick="addTask()">Add task</button>
+</div><div id="allTasks"></div>
+</section>
+</div>
+<script>
+const tabs=[['dashboard','Today'],['register','Scaffold Register'],['visit','New Job'],['costing','Pricing'],['tasks','Tasks']];
+let db=JSON.parse(localStorage.getItem('telnikdb')||'null')||{
+ scaffolds:[],visits:[],
+ tasks:[
+ {name:'Weekly toolbox talk',owner:'JC',freq:'Weekly',done:false},
+ {name:'Random H&S spot checks (2–3)',owner:'JC',freq:'Weekly',done:false},
+ {name:'Weekly scaffold inspections / tag updates',owner:'JC',freq:'Weekly',done:false},
+ {name:'Job costings',owner:'Both',freq:'Weekly',done:false},
+ {name:'Check kit, PPE and vehicles',owner:'Both',freq:'Weekly',done:false},
+ {name:'Review staffing / labour allocation',owner:'Both',freq:'Weekly',done:false},
+ {name:'Look for new clients / opportunities',owner:'Both',freq:'Ongoing',done:false},
+ {name:'Ensure installation info reaches office',owner:'Both',freq:'Ongoing',done:false}
+ ]};
+function save(){localStorage.setItem('telnikdb',JSON.stringify(db));render()}
+function nav(){let n=document.getElementById('nav');n.innerHTML=tabs.map((t,i)=>`<button class="tab ${i?'':'active'}" onclick="show('${t[0]}',this)">${t[1]}</button>`).join('')}
+function show(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');render()}
+function daysUntil(s){let a=new Date();a.setHours(0,0,0,0);let b=new Date(s+'T00:00:00');return Math.round((b-a)/86400000)}
+function nextDate(s){let d=new Date(s+'T00:00:00');d.setDate(d.getDate()+7);return d.toISOString().slice(0,10)}
+function render(){
+ let ds=db.scaffolds.map(s=>daysUntil(nextDate(s.date)));
+ due2.textContent=ds.filter(x=>x==2).length;due1.textContent=ds.filter(x=>x==1).length;due0.textContent=ds.filter(x=>x==0).length;over.textContent=ds.filter(x=>x<0).length;
+ taskList.innerHTML=db.tasks.filter(t=>!t.done).slice(0,8).map((t,i)=>`<div class="item"><b>${t.name}</b> <span class="pill">${t.owner}</span><br><small>${t.freq}${t.due?' • due '+t.due:''}</small></div>`).join('')||'<small>Nothing outstanding.</small>';
+ scaffolds.innerHTML=db.scaffolds.map((s,i)=>{let nd=nextDate(s.date),d=daysUntil(nd),st=d<0?`<span class="danger">OVERDUE ${-d}d</span>`:d==0?'<span class="danger">DUE TODAY</span>':`due in ${d}d`;return `<div class="card"><b>${s.name}</b> <span class="pill">${s.ins}</span><br><small>${s.address||''}</small><div class="item">Next inspection: <b>${nd}</b> — ${st}</div><button class="primary" onclick="inspect(${i})">Inspection done today</button> <button class="secondary" onclick="removeScaff(${i})">Remove</button></div>`}).join('');
+ visits.innerHTML=db.visits.map(v=>`<div class="card"><b>${v.job}</b><br><small>${v.vehicle} • ${v.len||'?'}m × ${v.height||'?'}m • ${v.lifts||'?'} lifts</small><div class="item">${v.checks.join(' • ')}</div></div>`).join('');
+ allTasks.innerHTML=db.tasks.map((t,i)=>`<div class="card"><b>${t.name}</b> <span class="pill">${t.owner}</span><br><small>${t.freq}${t.due?' • '+t.due:''}</small><br><button class="secondary" onclick="toggleTask(${i})">${t.done?'Reopen':'Complete'}</button></div>`).join('');
+}
+function addScaffold(){if(!rname.value||!rdate.value)return alert('Add job/site and date');db.scaffolds.push({name:rname.value,client:rclient.value,address:raddress.value,date:rdate.value,ins:rins.value,notes:rnotes.value});save();rname.value=rclient.value=raddress.value=rnotes.value=''}
+function inspect(i){db.scaffolds[i].date=new Date().toISOString().slice(0,10);save()}
+function removeScaff(i){db.scaffolds.splice(i,1);save()}
+function saveVisit(){if(!vjob.value)return alert('Add the job/address');db.visits.unshift({job:vjob.value,vehicle:vvehicle.value,len:vlen.value,height:vheight.value,lifts:vlifts.value,notes:vnotes.value,checks:[...document.querySelectorAll('.vcheck:checked')].map(x=>x.value)});save();vjob.value=vlen.value=vheight.value=vlifts.value=vnotes.value='';document.querySelectorAll('.vcheck').forEach(x=>x.checked=false)}
+function addTask(){if(!tname.value)return;db.tasks.unshift({name:tname.value,owner:towner.value,freq:tfreq.value,due:tdue.value,done:false});tname.value='';tdue.value='';save()}
+function toggleTask(i){db.tasks[i].done=!db.tasks[i].done;save()}
+function calc(){let days=+cdays.value||0,lab=(+clab.value||0)*days,veh=+cvehicle.value||0,oh=(+coverhead.value||0)*days,cost=lab+veh+oh,m=(+cmargin.value||0)/100,price=m>=1?0:cost/(1-m),profit=price-cost,area=(+clen.value||0)*(+cheight.value||0);calcOut.innerHTML=`<p>Approx area: <b>${area.toFixed(1)} m²</b></p><p>Estimated cost: <b>£${cost.toFixed(0)}</b></p><div class="total">Ballpark selling price: £${price.toFixed(0)}</div><p>Expected gross profit: <b>£${profit.toFixed(0)}</b> at ${Math.round(m*100)}% margin</p><small>This is an estimating aid, not a final quotation. Pricing rules still need Telnik rates.</small>`}
+nav();render();calc();
+</script></body></html>
