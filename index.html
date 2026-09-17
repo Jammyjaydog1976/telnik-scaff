@@ -1,131 +1,85 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
 <title>Telnik Scaff</title>
 <style>
-:root{--bg:#f4f4f2;--card:#fff;--ink:#222;--orange:#d9822b;--dark:#30343a;--red:#b42318;--amber:#b54708;--green:#067647}
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
-header{background:var(--dark);color:white;padding:calc(14px + env(safe-area-inset-top)) 18px 14px;position:sticky;top:0;z-index:5}
-header b{font-size:20px}.sub{font-size:12px;opacity:.75}.wrap{max-width:900px;margin:auto;padding:14px 14px 90px}
-nav{display:flex;gap:7px;overflow:auto;padding:8px 0 14px}.tab{border:0;border-radius:999px;padding:10px 13px;background:#ddd;white-space:nowrap;font-weight:700}.tab.active{background:var(--orange);color:white}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:11px;box-shadow:0 1px 4px #0001}
-.metric{font-size:29px;font-weight:800}.label{font-size:12px;color:#666}.danger{color:var(--red)}.warn{color:var(--amber)}.good{color:var(--green)}
-h2{margin:8px 0 12px}h3{margin:3px 0 10px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-input,select,textarea{width:100%;padding:11px;border:1px solid #ccc;border-radius:9px;font-size:16px;background:white}label{display:block;font-size:12px;font-weight:700;margin:9px 0 4px}
-button.primary{background:var(--orange);color:white;border:0;border-radius:9px;padding:11px 14px;font-weight:800}
-button.secondary{background:#e7e7e7;border:0;border-radius:9px;padding:10px 12px;font-weight:700}
-.item{border-top:1px solid #eee;padding:10px 0}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#eee;font-size:11px;font-weight:800}
-.hidden{display:none}.checks label{font-size:15px;font-weight:500;display:flex;gap:9px;align-items:flex-start}.checks input{width:auto;margin-top:3px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-small{color:#666}.total{font-size:22px;font-weight:800}.notice{border-left:4px solid var(--orange);padding-left:10px}
-@media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#f3f4f6;color:#111827}
+header{background:#111827;color:#fff;padding:18px 16px 15px;text-align:center}.logo{font-size:32px;font-weight:900;letter-spacing:2px}.logo span{color:#f59e0b}.subtitle{font-size:13px;color:#d1d5db}
+nav{display:flex;overflow-x:auto;background:#fff;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:10}nav button{border:0;background:#fff;padding:14px 15px;font-weight:700;white-space:nowrap;cursor:pointer}nav button.active{color:#b45309;border-bottom:3px solid #f59e0b}
+main{max-width:900px;margin:auto;padding:16px}.page{display:none}.page.active{display:block}h2{margin:4px 0 14px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px}.stat{text-align:center;cursor:pointer}.stat .number{font-size:32px;font-weight:900}.danger{color:#dc2626}.warning{color:#d97706}.good{color:#15803d}
+button.primary,.action{width:100%;border:0;border-radius:10px;padding:13px;font-size:16px;font-weight:800;cursor:pointer;margin-top:8px}.primary{background:#111827;color:#fff}.action{background:#f59e0b;color:#111827}.secondary{border:1px solid #ccc;background:#fff;border-radius:9px;padding:10px 12px;font-weight:700;cursor:pointer}.delete{border:0;background:#fee2e2;color:#991b1b;border-radius:9px;padding:10px;font-weight:700;cursor:pointer}
+input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;border-radius:9px;font-size:16px;background:#fff}textarea{min-height:90px;resize:vertical}label{font-weight:700;font-size:14px}.job-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.small{font-size:13px;color:#6b7280}.badge{display:inline-block;padding:5px 8px;border-radius:20px;font-size:12px;font-weight:800;margin-top:5px}.badge.red{background:#fee2e2;color:#991b1b}.badge.amber{background:#fef3c7;color:#92400e}.badge.green{background:#dcfce7;color:#166534}.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.photo-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}.check{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee}.check input{width:auto;margin-top:3px}hr{border:0;border-top:1px solid #eee;margin:16px 0}@media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 <body>
-<header><b>TELNIK SCAFF</b><div class="sub">Scaffold management • V1 working prototype</div></header>
-<div class="wrap">
-<nav id="nav"></nav>
+<header><div class="logo">TELNIK <span>SCAFF</span></div><div class="subtitle">Scaffold Management</div></header>
+<nav><button onclick="showPage('today',this)" class="active">Today</button><button onclick="showPage('register',this)">Scaffolds</button><button onclick="showPage('add',this)">Add Job</button><button onclick="showPage('checklist',this)">New Job Checklist</button><button onclick="showPage('costing',this)">Costing</button></nav>
+<main>
+<section id="today" class="page active"><h2>Today</h2><div class="grid">
+<div class="card stat" onclick="showFiltered('overdue')"><div class="number danger" id="overdueCount">0</div><b>Overdue Tags</b></div>
+<div class="card stat" onclick="showFiltered('today')"><div class="number warning" id="todayCount">0</div><b>Due Today</b></div>
+<div class="card stat" onclick="showFiltered('soon')"><div class="number" id="soonCount">0</div><b>Due Next 2 Days</b></div>
+<div class="card stat" onclick="showPage('register')"><div class="number good" id="totalCount">0</div><b>Live Scaffolds</b></div></div>
+<div class="card"><h3 style="margin-top:0">Priority Jobs</h3><div id="priorityJobs"></div></div></section>
 
-<section id="dashboard" class="page">
-<h2>Today</h2>
-<div class="grid">
- <div class="card"><div id="due2" class="metric">0</div><div class="label">Tags due in 2 days</div></div>
- <div class="card"><div id="due1" class="metric warn">0</div><div class="label">Tags due tomorrow</div></div>
- <div class="card"><div id="due0" class="metric danger">0</div><div class="label">Tags due today</div></div>
-<div class="card clickable" onclick="show('register')"><div id="over" class="metric danger">0</div><div class="label">Overdue tags</div></div>
-</div>
-<div class="card"><h3>My responsibilities</h3><div id="taskList"></div></div>
-<div class="card notice"><b>Rule:</b> information is entered once and follows the job from site visit → price → quote → live scaffold → inspections → strike.</div>
-</section>
+<section id="register" class="page"><h2>Scaffold Register</h2><div id="filterTitle" class="small"></div><div id="scaffoldList"></div></section>
 
-<section id="register" class="page hidden">
-<h2>Scaffold Register</h2>
-<div class="card">
-<div class="two"><div><label>Job / site</label><input id="rname"></div><div><label>Client</label><input id="rclient"></div></div>
-<label>Address</label><input id="raddress">
-<div class="two"><div><label>Erection / last inspection date</label><input id="rdate" type="date"></div><div><label>Inspector</label><select id="rins"><option>JC</option><option>CF</option><option>Both</option></select></div></div>
-<label>Notes</label><textarea id="rnotes"></textarea><br><button class="primary" onclick="addScaffold()">Add live scaffold</button>
-</div>
-<div id="scaffolds"></div>
-</section>
+<section id="add" class="page"><h2>Add Scaffold Job</h2><div class="card">
+<label>Job / Site Name</label><input id="jobName" placeholder="e.g. Flint House">
+<label>Address</label><textarea id="jobAddress" placeholder="Full site address"></textarea>
+<label>Job ID</label><input id="jobId" placeholder="e.g. 2609-1626">
+<label>Erection / Last Tag Date</label><input id="jobDate" type="date">
+<label>Contact / Notes</label><textarea id="jobNotes" placeholder="Access details, contact, scaffold notes..."></textarea>
+<button class="primary" onclick="addJob()">Save Job</button></div></section>
 
-<section id="visit" class="page hidden">
-<h2>New Job / Site Visit</h2>
-<div class="card">
-<label>Job / address</label><input id="vjob">
-<div class="checks">
-<label><input type="checkbox" class="vcheck" value="Ground checked">Ground / ground conditions checked</label>
-<label><input type="checkbox" class="vcheck" value="Obstructions checked">Any obstructions identified</label>
-<label><input type="checkbox" class="vcheck" value="Power cables checked">Overhead / nearby power cables checked</label>
-<label><input type="checkbox" class="vcheck" value="Neighbours considered">Need to speak to next-door neighbours?</label>
-<label><input type="checkbox" class="vcheck" value="Tight spots measured">Measurements taken of tight/restricted spots</label>
-<label><input type="checkbox" class="vcheck" value="Vehicle access checked">Vehicle access checked</label>
-</div>
-<label>Vehicle required</label><select id="vvehicle"><option>18t lorry</option><option>Transit</option><option>Either</option><option>Needs review</option></select>
-<div class="three"><div><label>Length (m)</label><input id="vlen" type="number" step=".1"></div><div><label>Height (m)</label><input id="vheight" type="number" step=".1"></div><div><label>Lifts</label><input id="vlifts" type="number" min="1"></div></div>
-<label>Notes / hazards / neighbour details</label><textarea id="vnotes"></textarea>
-<br><button class="primary" onclick="saveVisit()">Save site visit</button>
-</div><div id="visits"></div>
-</section>
+<section id="jobDetail" class="page"><button class="secondary" onclick="showPage('register')">← Back to Register</button><div id="jobDetailContent" style="margin-top:12px"></div></section>
 
-<section id="costing" class="page hidden">
-<h2>Pricing & Job Costing</h2>
-<div class="card">
-<p><b>Ballpark pricing calculator</b><br><small>Editable assumptions for now — we’ll replace these with Telnik’s actual pricing rules.</small></p>
-<div class="three"><div><label>Length (m)</label><input id="clen" type="number" value="10"></div><div><label>Height (m)</label><input id="cheight" type="number" value="6"></div><div><label>Lifts</label><input id="clifts" type="number" value="2"></div></div>
-<div class="two"><div><label>Estimated gang days</label><input id="cdays" type="number" step=".5" value="1"></div><div><label>Vehicle</label><select id="cveh"><option>18t lorry</option><option>Transit</option></select></div></div>
-<div class="two"><div><label>Labour cost / gang day (£)</label><input id="clab" type="number" value="850"></div><div><label>Vehicle & fuel (£)</label><input id="cvehicle" type="number" value="120"></div></div>
-<div class="two"><div><label>Overhead allowance / day (£)</label><input id="coverhead" type="number" value="400"></div><div><label>Target margin (%)</label><input id="cmargin" type="number" value="40"></div></div>
-<button class="primary" onclick="calc()">Calculate ballpark</button>
-<div id="calcOut" class="item"></div>
-</div>
-</section>
+<section id="checklist" class="page"><h2>New Job Checklist</h2><div class="card">
+<label>Site / Job</label><input id="checkSite" placeholder="Site name or address"><div id="checkItems"></div>
+<label style="display:block;margin-top:14px">Measurements / Tight Spots</label><textarea id="measurements"></textarea>
+<label>Extra Notes</label><textarea id="checkNotes"></textarea>
+<button class="primary" onclick="saveChecklist()">Save Checklist</button></div></section>
 
-<section id="tasks" class="page hidden">
-<h2>Management Tasks</h2>
-<div class="card">
-<div class="two"><div><label>Task</label><input id="tname"></div><div><label>Owner</label><select id="towner"><option>JC</option><option>CF</option><option>Both</option></select></div></div>
-<div class="two"><div><label>Frequency</label><select id="tfreq"><option>One-off</option><option>Daily</option><option>Weekly</option><option>Monthly</option></select></div><div><label>Due date</label><input id="tdue" type="date"></div></div>
-<button class="primary" onclick="addTask()">Add task</button>
-</div><div id="allTasks"></div>
-</section>
-</div>
+<section id="costing" class="page"><h2>Quick Scaffold Costing</h2><div class="card">
+<label>Length (metres)</label><input id="length" type="number" oninput="calculatePrice()">
+<label>Height (metres)</label><input id="height" type="number" oninput="calculatePrice()">
+<label>Rate per m² (£)</label><input id="rate" type="number" value="35" oninput="calculatePrice()">
+<label>Extras (£)</label><input id="extras" type="number" value="0" oninput="calculatePrice()"><hr>
+<div class="small">Area</div><div style="font-size:24px;font-weight:900" id="areaResult">0 m²</div>
+<div class="small" style="margin-top:12px">Suggested Price</div><div style="font-size:32px;font-weight:900" id="priceResult">£400</div>
+<div class="small">Minimum job price currently set at £400.</div></div></section>
+</main>
 <script>
-const tabs=[['dashboard','Today'],['register','Scaffold Register'],['visit','New Job'],['costing','Pricing'],['tasks','Tasks']];
-let db=JSON.parse(localStorage.getItem('telnikdb')||'null')||{
- scaffolds:[],visits:[],
- tasks:[
- {name:'Weekly toolbox talk',owner:'JC',freq:'Weekly',done:false},
- {name:'Random H&S spot checks (2–3)',owner:'JC',freq:'Weekly',done:false},
- {name:'Weekly scaffold inspections / tag updates',owner:'JC',freq:'Weekly',done:false},
- {name:'Job costings',owner:'Both',freq:'Weekly',done:false},
- {name:'Check kit, PPE and vehicles',owner:'Both',freq:'Weekly',done:false},
- {name:'Review staffing / labour allocation',owner:'Both',freq:'Weekly',done:false},
- {name:'Look for new clients / opportunities',owner:'Both',freq:'Ongoing',done:false},
- {name:'Ensure installation info reaches office',owner:'Both',freq:'Ongoing',done:false}
- ]};
-function save(){localStorage.setItem('telnikdb',JSON.stringify(db));render()}
-function nav(){let n=document.getElementById('nav');n.innerHTML=tabs.map((t,i)=>`<button class="tab ${i?'':'active'}" onclick="show('${t[0]}',this)">${t[1]}</button>`).join('')}
-function show(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');render()}
-function daysUntil(s){let a=new Date();a.setHours(0,0,0,0);let b=new Date(s+'T00:00:00');return Math.round((b-a)/86400000)}
-function nextDate(s){let d=new Date(s+'T00:00:00');d.setDate(d.getDate()+7);return d.toISOString().slice(0,10)}
-function render(){
- let ds=db.scaffolds.map(s=>daysUntil(nextDate(s.date)));
- due2.textContent=ds.filter(x=>x==2).length;due1.textContent=ds.filter(x=>x==1).length;due0.textContent=ds.filter(x=>x==0).length;over.textContent=ds.filter(x=>x<0).length;
- taskList.innerHTML=db.tasks.filter(t=>!t.done).slice(0,8).map((t,i)=>`<div class="item"><b>${t.name}</b> <span class="pill">${t.owner}</span><br><small>${t.freq}${t.due?' • due '+t.due:''}</small></div>`).join('')||'<small>Nothing outstanding.</small>';
- scaffolds.innerHTML=db.scaffolds.map((s,i)=>{let nd=nextDate(s.date),d=daysUntil(nd),st=d<0?`<span class="danger">OVERDUE ${-d}d</span>`:d==0?'<span class="danger">DUE TODAY</span>':`due in ${d}d`;return `<div class="card"><b>${s.name}</b> <span class="pill">${s.ins}</span><br><small>${s.address||''}</small><div class="item">Next inspection: <b>${nd}</b> — ${st}</div><button class="primary" onclick="inspect(${i})">Inspection done today</button> <button class="secondary" onclick="window.open('https://maps.apple.com/?q='+encodeURIComponent(s.address||s.name),'_blank')">🗺️ Maps</button> <button class="secondary" onclick="removeScaff(${i})">Remove</button></div>`}).join('');
- visits.innerHTML=db.visits.map(v=>`<div class="card"><b>${v.job}</b><br><small>${v.vehicle} • ${v.len||'?'}m × ${v.height||'?'}m • ${v.lifts||'?'} lifts</small><div class="item">${v.checks.join(' • ')}</div></div>`).join('');
- allTasks.innerHTML=db.tasks.map((t,i)=>`<div class="card"><b>${t.name}</b> <span class="pill">${t.owner}</span><br><small>${t.freq}${t.due?' • '+t.due:''}</small><br><button class="secondary" onclick="toggleTask(${i})">${t.done?'Reopen':'Complete'}</button></div>`).join('');
-
- 
-
-function addScaffold(){if(!rname.value||!rdate.value)return alert('Add job/site and date');db.scaffolds.push({name:rname.value,client:rclient.value,address:raddress.value,date:rdate.value,ins:rins.value,notes:rnotes.value});save();rname.value=rclient.value=raddress.value=rnotes.value=''}
-function inspect(i){db.scaffolds[i].date=new Date().toISOString().slice(0,10);save()}
-function removeScaff(i){db.scaffolds.splice(i,1);save()}
-function saveVisit(){if(!vjob.value)return alert('Add the job/address');db.visits.unshift({job:vjob.value,vehicle:vvehicle.value,len:vlen.value,height:vheight.value,lifts:vlifts.value,notes:vnotes.value,checks:[...document.querySelectorAll('.vcheck:checked')].map(x=>x.value)});save();vjob.value=vlen.value=vheight.value=vlifts.value=vnotes.value='';document.querySelectorAll('.vcheck').forEach(x=>x.checked=false)}
-function addTask(){if(!tname.value)return;db.tasks.unshift({name:tname.value,owner:towner.value,freq:tfreq.value,due:tdue.value,done:false});tname.value='';tdue.value='';save()}
-function toggleTask(i){db.tasks[i].done=!db.tasks[i].done;save()}
-function calc(){let days=+cdays.value||0,lab=(+clab.value||0)*days,veh=+cvehicle.value||0,oh=(+coverhead.value||0)*days,cost=lab+veh+oh,m=(+cmargin.value||0)/100,price=m>=1?0:cost/(1-m),profit=price-cost,area=(+clen.value||0)*(+cheight.value||0);calcOut.innerHTML=`<p>Approx area: <b>${area.toFixed(1)} m²</b></p><p>Estimated cost: <b>£${cost.toFixed(0)}</b></p><div class="total">Ballpark selling price: £${price.toFixed(0)}</div><p>Expected gross profit: <b>£${profit.toFixed(0)}</b> at ${Math.round(m*100)}% margin</p><small>This is an estimating aid, not a final quotation. Pricing rules still need Telnik rates.</small>`}
-nav();render();calc();
-</script></body></html>
+const db=JSON.parse(localStorage.getItem("telnikScaffDB"))||{scaffolds:[],checklists:[]};
+function saveDB(){localStorage.setItem("telnikScaffDB",JSON.stringify(db))}
+function parseDate(s){return new Date(s+"T12:00:00")}
+function nextDate(s){const d=parseDate(s);d.setDate(d.getDate()+7);return d}
+function daysUntil(date){const now=new Date();now.setHours(12,0,0,0);const d=new Date(date);d.setHours(12,0,0,0);return Math.round((d-now)/86400000)}
+function formatDate(d){return d.toLocaleDateString("en-GB")}
+function statusFor(j){const d=daysUntil(nextDate(j.date));if(d<0)return{text:`OVERDUE ${Math.abs(d)} DAY${Math.abs(d)==1?"":"S"}`,cls:"red",days:d};if(d===0)return{text:"DUE TODAY",cls:"red",days:d};if(d<=2)return{text:`DUE IN ${d} DAY${d==1?"":"S"}`,cls:"amber",days:d};return{text:`DUE IN ${d} DAYS`,cls:"green",days:d}}
+function showPage(id,btn){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");if(id==="register")renderScaffolds();if(id==="today")renderDashboard();window.scrollTo(0,0)}
+function addJob(){const name=jobName.value.trim(),address=jobAddress.value.trim(),id=jobId.value.trim(),date=jobDate.value,notes=jobNotes.value.trim();if(!name||!date){alert("Add the site name and erection/tag date first.");return}db.scaffolds.push({uid:Date.now(),name,address,jobId:id,date,notes,photos:[]});saveDB();jobName.value=jobAddress.value=jobId.value=jobDate.value=jobNotes.value="";renderDashboard();showPage("register")}
+function jobCard(j){const s=statusFor(j);return `<div class="card"><div class="job-head"><div><b style="font-size:18px">${esc(j.name)}</b>${j.jobId?`<div class="small">Job ID: ${esc(j.jobId)}</div>`:""}<span class="badge ${s.cls}">${s.text}</span></div></div>${j.address?`<p>${esc(j.address)}</p>`:""}<div class="small">Last tag: ${formatDate(parseDate(j.date))}<br>Next tag: ${formatDate(nextDate(j.date))}</div><button class="action" onclick="openJob(${j.uid})">Open Job</button>${j.address?`<button class="primary" onclick="openMaps('${encodeURIComponent(j.address)}')">Navigate to Site</button>`:""}</div>`}
+function renderScaffolds(filter="all"){let jobs=[...db.scaffolds];if(filter==="overdue")jobs=jobs.filter(j=>statusFor(j).days<0);if(filter==="today")jobs=jobs.filter(j=>statusFor(j).days===0);if(filter==="soon")jobs=jobs.filter(j=>statusFor(j).days>0&&statusFor(j).days<=2);jobs.sort((a,b)=>statusFor(a).days-statusFor(b).days);filterTitle.innerHTML=filter==="all"?"All current scaffolds":`Filtered jobs &nbsp; <button class="secondary" onclick="renderScaffolds()">Show All</button>`;scaffoldList.innerHTML=jobs.length?jobs.map(jobCard).join(""):`<div class="card">No jobs in this section.</div>`}
+function showFiltered(t){showPage("register");renderScaffolds(t)}
+function renderDashboard(){const ss=db.scaffolds.map(statusFor);overdueCount.textContent=ss.filter(s=>s.days<0).length;todayCount.textContent=ss.filter(s=>s.days===0).length;soonCount.textContent=ss.filter(s=>s.days>0&&s.days<=2).length;totalCount.textContent=db.scaffolds.length;const p=[...db.scaffolds].filter(j=>statusFor(j).days<=2).sort((a,b)=>statusFor(a).days-statusFor(b).days);priorityJobs.innerHTML=p.length?p.map(j=>{const s=statusFor(j);return `<div style="padding:10px 0;border-bottom:1px solid #eee;cursor:pointer" onclick="openJob(${j.uid})"><b>${esc(j.name)}</b><br><span class="badge ${s.cls}">${s.text}</span></div>`}).join(""):`<div class="small">Nothing urgent. You're all caught up.</div>`}
+function openJob(uid){const j=db.scaffolds.find(x=>x.uid===uid);if(!j)return;const s=statusFor(j);jobDetailContent.innerHTML=`<div class="card"><h2>${esc(j.name)}</h2>${j.jobId?`<div class="small">Job ID: ${esc(j.jobId)}</div>`:""}<span class="badge ${s.cls}">${s.text}</span>${j.address?`<p>${esc(j.address)}</p>`:""}<p class="small">Last tag: ${formatDate(parseDate(j.date))}<br>Next inspection: ${formatDate(nextDate(j.date))}</p>${j.address?`<button class="action" onclick="openMaps('${encodeURIComponent(j.address)}')">Open Maps / Drive Here</button>`:""}<button class="primary" onclick="renewTag(${uid})">Tag Updated Today</button><hr><label>Job Notes</label><textarea id="detailNotes">${esc(j.notes||"")}</textarea><button class="secondary" onclick="saveNotes(${uid})">Save Notes</button><hr><h3>Site Photos</h3><input type="file" accept="image/*" capture="environment" onchange="addPhoto(event,${uid})"><div class="photo-grid">${(j.photos||[]).map((p,i)=>`<img src="${p}" onclick="removePhoto(${uid},${i})">`).join("")}</div><hr><button class="delete" onclick="deleteJob(${uid})">Delete Job</button></div>`;showPage("jobDetail")}
+function renewTag(uid){const j=db.scaffolds.find(x=>x.uid===uid),n=new Date();j.date=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`;saveDB();renderDashboard();openJob(uid)}
+function saveNotes(uid){db.scaffolds.find(x=>x.uid===uid).notes=detailNotes.value;saveDB();alert("Notes saved.")}
+function deleteJob(uid){if(!confirm("Delete this scaffold job?"))return;db.scaffolds=db.scaffolds.filter(x=>x.uid!==uid);saveDB();renderDashboard();showPage("register")}
+function openMaps(a){window.open("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(decodeURIComponent(a)),"_blank")}
+function addPhoto(e,uid){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=x=>{const img=new Image();img.onload=()=>{const c=document.createElement("canvas");let w=img.width,h=img.height,max=900;if(w>h&&w>max){h=Math.round(h*max/w);w=max}else if(h>=w&&h>max){w=Math.round(w*max/h);h=max}c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);const j=db.scaffolds.find(x=>x.uid===uid);j.photos=j.photos||[];j.photos.push(c.toDataURL("image/jpeg",.65));try{saveDB();openJob(uid)}catch(err){j.photos.pop();alert("App photo storage is full.")}};img.src=x.target.result};r.readAsDataURL(f)}
+function removePhoto(uid,i){if(!confirm("Delete this photo?"))return;const j=db.scaffolds.find(x=>x.uid===uid);j.photos.splice(i,1);saveDB();openJob(uid)}
+const checklistItems=["Ground condition suitable","Any obstructions","Overhead power cables","Need to contact electricity network / power company","Need to speak to neighbours","Measure tight spots / restricted areas","Good lorry access","Transit required instead of lorry","Ladder gates required","Safe ladder position","Public protection required","Pedestrian access / pavement issues","Roof hazards / fragile surfaces","Loading bays required","Any asbestos concerns","Other general hazards identified"];
+function renderChecklist(){checkItems.innerHTML=checklistItems.map((x,i)=>`<label class="check"><input type="checkbox" id="check${i}"><span>${x}</span></label>`).join("")}
+function saveChecklist(){const site=checkSite.value.trim();if(!site){alert("Add the site name first.");return}db.checklists.push({uid:Date.now(),site,checked:checklistItems.filter((x,i)=>document.getElementById("check"+i).checked),measurements:measurements.value,notes:checkNotes.value,created:new Date().toISOString()});saveDB();alert("Site visit checklist saved.");checkSite.value=measurements.value=checkNotes.value="";renderChecklist()}
+function calculatePrice(){const l=parseFloat(length.value)||0,h=parseFloat(height.value)||0,r=parseFloat(rate.value)||0,e=parseFloat(extras.value)||0,a=l*h;let p=a*r+e;if(p<400)p=400;areaResult.textContent=a.toFixed(1)+" m²";priceResult.textContent="£"+Math.round(p).toLocaleString("en-GB")}
+function esc(s){return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+renderChecklist();renderDashboard();renderScaffolds();calculatePrice();
+</script>
+</body>
+</html>
