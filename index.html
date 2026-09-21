@@ -60,7 +60,7 @@ input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;b
 <button class="rate-btn" type="button" onclick="setRate(60,this)">£60<br><span class="small">London+</span></button>
 </div>
 <label>Rate per m² (£)</label><input id="rate" type="number" value="35" oninput="calculatePrice()">
-<label>Extras (£)</label><input id="extras" type="number" value="0" oninput="calculatePrice()"><hr>
+<label>Extras (£)</label><input id="extras" type="number" value="0"><button class="action" type="button" onclick="calculatePrice()">CALCULATE PRICE</button><hr>
 <div class="small">Chargeable area (length × lifts)</div><div style="font-size:24px;font-weight:900" id="areaResult">0 m²</div>
 <div class="small" style="margin-top:12px">Suggested Price</div><div style="font-size:32px;font-weight:900" id="priceResult">£400</div>
 <div class="small">Minimum job price £400. Use the rate that fits the location/job. Extras are added after the area calculation.</div></div></section>
@@ -124,8 +124,24 @@ function removePhoto(uid,i){if(!confirm("Delete this photo?"))return;const j=db.
 const checklistItems=["Ground condition suitable","Any obstructions","Overhead power cables","Need to contact electricity network / power company","Need to speak to neighbours","Measure tight spots / restricted areas","Good lorry access","Transit required instead of lorry","Ladder gates required","Safe ladder position","Public protection required","Pedestrian access / pavement issues","Roof hazards / fragile surfaces","Loading bays required","Any asbestos concerns","Other general hazards identified"];
 function renderChecklist(){checkItems.innerHTML=checklistItems.map((x,i)=>`<label class="check"><input type="checkbox" id="check${i}"><span>${x}</span></label>`).join("")}
 function saveChecklist(){const site=checkSite.value.trim();if(!site){alert("Add the site name first.");return}db.checklists.push({uid:Date.now(),site,checked:checklistItems.filter((x,i)=>document.getElementById("check"+i).checked),measurements:measurements.value,notes:checkNotes.value,created:new Date().toISOString()});saveDB();alert("Site visit checklist saved.");checkSite.value=measurements.value=checkNotes.value="";renderChecklist()}
-function setRate(v,btn){rate.value=v;document.querySelectorAll(".rate-btn").forEach(b=>b.classList.remove("selected"));if(btn)btn.classList.add("selected");calculatePrice()}
-function calculatePrice(){const l=parseFloat(length.value)||0,lf=parseFloat(lifts.value)||0,r=parseFloat(rate.value)||0,e=parseFloat(extras.value)||0,a=l*lf;let p=a*r+e;if(p<400)p=400;areaResult.textContent=a.toFixed(1)+" m²";priceResult.textContent="£"+Math.round(p).toLocaleString("en-GB")}
+function setRate(v,btn){
+ const rateEl=document.getElementById("rate");
+ rateEl.value=v;
+ document.querySelectorAll(".rate-btn").forEach(b=>b.classList.remove("selected"));
+ if(btn)btn.classList.add("selected");
+ calculatePrice();
+}
+function calculatePrice(){
+ const lengthEl=document.getElementById("length"),liftsEl=document.getElementById("lifts"),
+ rateEl=document.getElementById("rate"),extrasEl=document.getElementById("extras"),
+ areaEl=document.getElementById("areaResult"),priceEl=document.getElementById("priceResult");
+ if(!lengthEl||!liftsEl||!rateEl||!extrasEl||!areaEl||!priceEl)return;
+ const l=parseFloat(lengthEl.value)||0,lf=parseFloat(liftsEl.value)||0,
+ r=parseFloat(rateEl.value)||0,e=parseFloat(extrasEl.value)||0,a=l*lf;
+ let price=a*r+e;if(price<400)price=400;
+ areaEl.textContent=a.toFixed(1)+" m²";
+ priceEl.textContent="£"+Math.round(price).toLocaleString("en-GB");
+}
 function esc(s){return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 
 function addAttendance(){
@@ -176,7 +192,7 @@ function deleteIdea(uid){if(!confirm("Delete this idea?"))return;db.ideas=db.ide
 
 if(document.getElementById("attDate")){const n=new Date();attDate.value=isoDate(n);if(document.getElementById("payrollWeek"))payrollWeek.value=isoDate(n);}
 window.addEventListener("online",updateSyncStatus);window.addEventListener("offline",updateSyncStatus);updateSyncStatus();
-renderChecklist();renderDashboard();renderScaffolds();renderAttendance();renderTasks();renderIdeas();calculatePrice();
+["length","lifts","rate","extras"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",calculatePrice)});renderChecklist();renderDashboard();renderScaffolds();renderAttendance();renderTasks();renderIdeas();calculatePrice();
 </script>
 </body>
 </html>
