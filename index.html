@@ -44,6 +44,20 @@ input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;b
 <section id="jobDetail" class="page"><button class="secondary" onclick="showPage('register')">← Back to Register</button><div id="jobDetailContent" style="margin-top:12px"></div></section>
 
 <section id="checklist" class="page"><h2>New Job Checklist</h2><div class="card">
+ <label>Price / Quote (£)</label>
+<input id="checkPrice" type="number" step="0.01" placeholder="Enter quoted price">
+
+<label style="display:block;margin-top:14px">Job Photos</label>
+<input id="checkPhotos" type="file" accept="image/*" multiple>
+
+<label style="display:block;margin-top:14px">Job Stage</label>
+<select id="checkStage">
+  <option value="site-visit">Site Visit</option>
+  <option value="quoted">Quoted</option>
+  <option value="accepted">Quote Accepted</option>
+  <option value="in-progress">Job In Progress</option>
+  <option value="complete">Job Complete</option>
+</select>
 <label>Site / Job</label><input id="checkSite" placeholder="Site name or address"><div id="checkItems"></div>
 <label style="display:block;margin-top:14px">Measurements / Tight Spots</label><textarea id="measurements"></textarea>
 <label>Extra Notes</label><textarea id="checkNotes"></textarea>
@@ -123,7 +137,32 @@ function addPhoto(e,uid){const f=e.target.files[0];if(!f)return;const r=new File
 function removePhoto(uid,i){if(!confirm("Delete this photo?"))return;const j=db.scaffolds.find(x=>x.uid===uid);j.photos.splice(i,1);saveDB();openJob(uid)}
 const checklistItems=["Ground condition suitable","Any obstructions","Overhead power cables","Need to contact electricity network / power company","Need to speak to neighbours","Measure tight spots / restricted areas","Good lorry access","Transit required instead of lorry","Ladder gates required","Safe ladder position","Public protection required","Pedestrian access / pavement issues","Roof hazards / fragile surfaces","Loading bays required","Any asbestos concerns","Other general hazards identified"];
 function renderChecklist(){checkItems.innerHTML=checklistItems.map((x,i)=>`<label class="check"><input type="checkbox" id="check${i}"><span>${x}</span></label>`).join("")}
-function saveChecklist(){const site=checkSite.value.trim();if(!site){alert("Add the site name first.");return}db.checklists.push({uid:Date.now(),site,checked:checklistItems.filter((x,i)=>document.getElementById("check"+i).checked),measurements:measurements.value,notes:checkNotes.value,created:new Date().toISOString()});saveDB();alert("Site visit checklist saved.");checkSite.value=measurements.value=checkNotes.value="";renderChecklist()}
+function saveChecklist(){
+  const site=checkSite.value.trim();
+  if(!site){alert("Add the site name first.");return;}
+
+  db.checklists.push({
+    id:Date.now(),
+    site:site,
+    price:checkPrice.value,
+    stage:checkStage.value,
+    checked:[...document.querySelectorAll('#checkItems input[type="checkbox"]:checked')].map(x=>x.parentElement.textContent.trim()),
+    measurements:measurements.value,
+    notes:checkNotes.value,
+    created:new Date().toISOString()
+  });
+
+  saveDB();
+  alert("Site visit checklist saved.");
+  checkSite.value="";
+  checkPrice.value="";
+  checkStage.value="site-visit";
+  measurements.value="";
+  checkNotes.value="";
+  renderChecklist();
+}
+
+
 function setRate(v,btn){
  const rateEl=document.getElementById("rate");
  rateEl.value=v;
