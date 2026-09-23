@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telnik Attendance Test</title>
+
+<style>
+body{
+  margin:0;
+  padding:20px;
+  font-family:Arial,sans-serif;
+  background:#f3f4f6;
+  color:#111827;
+}
+.card{
+  max-width:700px;
+  margin:auto;
+  background:white;
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
+}
+h1{margin-top:0}
+label{
+  display:block;
+  font-weight:bold;
+  margin-top:14px;
+}
+input,select,textarea{
+  width:100%;
+  box-sizing:border-box;
+  padding:12px;
+  margin-top:5px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  font-size:16px;
+}
+button{
+  margin-top:16px;
+  padding:12px 16px;
+  border:0;
+  border-radius:8px;
+  background:#111827;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+.hidden{display:none}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>Attendance Test</h1>
+
+  <label>Employee</label>
+  <input id="attName" placeholder="Employee name">
+
+  <label>Date</label>
+  <input id="attDate" type="date">
+
+  <label>Day type</label>
+  <select id="dayType" onchange="changeDayType()">
+    <option value="Full Day">Full Day</option>
+    <option value="Half Day">Half Day</option>
+    <option value="Custom Hours">Custom Hours</option>
+  </select>
+
+  <div id="hoursBox" class="hidden">
+    <label>Hours worked</label>
+    <input id="hours" type="number" step="0.5" min="0" placeholder="e.g. 6.5">
+  </div>
+
+  <label>Overtime hours</label>
+  <input id="overtime" type="number" step="0.5" min="0" placeholder="e.g. 2">
+
+  <label>Notes / reason</label>
+  <textarea id="notes" placeholder="Optional notes"></textarea>
+
+  <button onclick="testEntry()">Test attendance entry</button>
+
+  <div id="result"></div>
+</div>
+
+<script>
+function changeDayType(){
+  document.getElementById("hoursBox").classList.toggle(
+    "hidden",
+    document.getElementById("dayType").value !== "Custom Hours"
+  );
+}
+
+function testEntry(){
+  const name=document.getElementById("attName").value.trim();
+  const date=document.getElementById("attDate").value;
+  const dayType=document.getElementById("dayType").value;
+  const hours=document.getElementById("hours").value;
+  const overtime=document.getElementById("overtime").value;
+  const notes=document.getElementById("notes").value.trim();
+
+  if(!name || !date){
+    alert("Add employee name and date.");
+    return;
+  }
+
+  const worked =
+    dayType==="Custom Hours"
+      ? (hours ? hours+" hours" : "Custom hours not entered")
+      : dayType;
+
+  document.getElementById("result").innerHTML =
+    "<hr><b>"+name+"</b><br>"+
+    date+" — "+worked+
+    (overtime ? "<br>Overtime: "+overtime+" hrs" : "")+
+    (notes ? "<br>Notes: "+notes : "");
+}
+</script>
+
+</body>
+</html>
