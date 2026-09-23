@@ -480,6 +480,10 @@ function deleteIdea(uid){if(!confirm("Delete this idea?"))return;db.ideas=db.ide
 if(document.getElementById("attDate")){const n=new Date();attDate.value=isoDate(n);if(document.getElementById("payrollWeek"))payrollWeek.value=isoDate(n);}
 window.addEventListener("online",updateSyncStatus);window.addEventListener("offline",updateSyncStatus);updateSyncStatus();
 ["length","lifts","rate","extras"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",calculatePrice)});renderChecklist();renderDashboard();renderScaffolds();renderAttendance();renderTasks();renderIdeas();calculatePrice();
+<script>
+function telnikAttendanceTest() {
+  alert("Attendance patch position confirmed");
+}
 </script>
 </body>
 </html>
