@@ -12,7 +12,7 @@ nav{display:flex;overflow-x:auto;background:#fff;border-bottom:1px solid #ddd;po
 main{max-width:900px;margin:auto;padding:16px}.page{display:none}.page.active{display:block}h2{margin:4px 0 14px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px}.stat{text-align:center;cursor:pointer}.stat .number{font-size:32px;font-weight:900}.danger{color:#dc2626}.warning{color:#d97706}.good{color:#15803d}
 button.primary,.action{width:100%;border:0;border-radius:10px;padding:13px;font-size:16px;font-weight:800;cursor:pointer;margin-top:8px}.primary{background:#111827;color:#fff}.action{background:#f59e0b;color:#111827}.secondary{border:1px solid #ccc;background:#fff;border-radius:9px;padding:10px 12px;font-weight:700;cursor:pointer}.delete{border:0;background:#fee2e2;color:#991b1b;border-radius:9px;padding:10px;font-weight:700;cursor:pointer}
-input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;border-radius:9px;font-size:16px;background:#fff}textarea{min-height:90px;resize:vertical}label{font-weight:700;font-size:14px}.job-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.small{font-size:13px;color:#6b7280}.badge{display:inline-block;padding:5px 8px;border-radius:20px;font-size:12px;font-weight:800;margin-top:5px}.badge.red{background:#fee2e2;color:#991b1b}.badge.amber{background:#fef3c7;color:#92400e}.badge.green{background:#dcfce7;color:#166534}.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.photo-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}.check{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee}.check input{width:auto;margin-top:3px}hr{border:0;border-top:1px solid #eee;margin:16px 0}.rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 12px}
+input,textarea,select{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;border-radius:9px;font-size:16px;background:#fff}textarea{min-height:90px;resize:vertical}label{font-weight:700;font-size:14px}.job-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.small{font-size:13px;color:#6b7280}.badge{display:inline-block;padding:5px 8px;border-radius:20px;font-size:12px;font-weight:800;margin-top:5px}.badge.red{background:#fee2e2;color:#991b1b}.badge.amber{background:#fef3c7;color:#92400e}.badge.green{background:#dcfce7;color:#166534}.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.photo-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}.check{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee}.check input{width:auto;margin-top:3px}hr{border:0;border-top:1px solid #eee;margin:16px 0}.rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 12px}
 .rate-btn{border:1px solid #d1d5db;background:#fff;border-radius:9px;padding:11px 6px;font-weight:800;cursor:pointer}
 .rate-btn.selected{background:#111827;color:#fff;border-color:#111827}
 .pulled{border:2px solid #dc2626}.history-item{padding:10px 0;border-bottom:1px solid #eee}.history-item:last-child{border-bottom:0}
@@ -58,7 +58,7 @@ input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;b
   <option value="in-progress">Job In Progress</option>
   <option value="complete">Job Complete</option>
 </select>
-<label>Site / Job</label><input id="checkSite" placeholder="Site name or address"><div id="checkItems"></div>
+<label>Site / Job</label><input id="checkSite" placeholder="Site name or address"><div id="checkItems"></div><a class="action" style="display:block;text-align:center;text-decoration:none" href="https://www.ukpowernetworks.co.uk/" target="_blank" rel="noopener">Book shrouding of cable — UK Power Networks</a>
 <label style="display:block;margin-top:14px">Measurements / Tight Spots</label><textarea id="measurements"></textarea>
 <label>Extra Notes</label><textarea id="checkNotes"></textarea>
 <button class="primary" onclick="saveChecklist()">Save Checklist</button></div></section>
@@ -66,18 +66,27 @@ input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;b
 <section id="costing" class="page"><h2>Quick Scaffold Costing</h2><div class="card">
 <label>Length (metres)</label><input id="length" type="number" min="0" step="0.1" oninput="calculatePrice()">
 <label>Number of lifts</label><input id="lifts" type="number" min="1" step="1" value="2" oninput="calculatePrice()">
-<label>Rate per m²</label>
-<div class="rate-grid">
+<label>Rate per m²</label><div class="rate-grid">
 <button class="rate-btn selected" type="button" onclick="setRate(35,this)">£35<br><span class="small">Bucks</span></button>
 <button class="rate-btn" type="button" onclick="setRate(40,this)">£40<br><span class="small">Further out</span></button>
 <button class="rate-btn" type="button" onclick="setRate(50,this)">£50<br><span class="small">London</span></button>
-<button class="rate-btn" type="button" onclick="setRate(60,this)">£60<br><span class="small">London+</span></button>
-</div>
+<button class="rate-btn" type="button" onclick="setRate(60,this)">£60<br><span class="small">London+</span></button></div>
 <label>Rate per m² (£)</label><input id="rate" type="number" value="35" oninput="calculatePrice()">
-<label>Extras (£)</label><input id="extras" type="number" value="0"><button class="action" type="button" onclick="calculatePrice()">CALCULATE PRICE</button><hr>
+<hr><h3>Running costs & travel</h3>
+<div class="small">Lee's current allowance: £500 overhead + £500 wages per gang per full day. The calculator apportions that £1,000 across an 8-hour day.</div>
+<label>Hours on site</label><input id="siteHours" type="number" min="0" step="0.25" value="0" oninput="calculatePrice()">
+<label>Travel time — yard → site → yard (hours total)</label><input id="travelHours" type="number" min="0" step="0.25" value="0" oninput="calculatePrice()">
+<label>Fuel — full return journey (£)</label><input id="fuelCost" type="number" min="0" step="1" value="0" oninput="calculatePrice()">
+<label>Other job extras (£)</label><input id="extras" type="number" min="0" step="1" value="0" oninput="calculatePrice()">
+<label>Overhead per gang / day (£)</label><input id="overheadDay" type="number" min="0" step="10" value="500" oninput="calculatePrice()">
+<label>Wages per gang / day (£)</label><input id="wagesDay" type="number" min="0" step="10" value="500" oninput="calculatePrice()">
+<label>Working day (hours)</label><input id="dayHours" type="number" min="1" step="0.5" value="8" oninput="calculatePrice()">
+<label>Target profit (%)</label><input id="profitPct" type="number" min="0" step="1" value="20" oninput="calculatePrice()">
+<button class="action" type="button" onclick="calculatePrice()">CALCULATE PRICE</button><hr>
 <div class="small">Chargeable area (length × lifts)</div><div style="font-size:24px;font-weight:900" id="areaResult">0 m²</div>
-<div class="small" style="margin-top:12px">Suggested Price</div><div style="font-size:32px;font-weight:900" id="priceResult">£400</div>
-<div class="small">Minimum job price £400. Use the rate that fits the location/job. Extras are added after the area calculation.</div></div></section>
+<div id="costBreakdown" class="card" style="margin-top:12px;background:#f9fafb"></div>
+<div class="small">Suggested quote incl. 20% target profit</div><div style="font-size:32px;font-weight:900" id="priceResult">£400</div>
+<div class="small">Minimum job price £400. Travel is entered as the complete yard → site → yard journey. Change the allowances above if Lee changes the figures.</div></div></section>
 
 <section id="attendance" class="page"><h2>Attendance</h2><div class="card">
 <label>Date</label><input id="attDate" type="date">
@@ -88,7 +97,7 @@ input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;b
 <label class="check"><input id="attCheck" type="checkbox"><span>Vehicle / lorry check completed</span></label>
 <button class="primary" onclick="addAttendance()">Save Attendance</button></div>
 <div class="card"><h3 style="margin-top:0">Weekly Payroll Export</h3>
-<label>Week containing</label><input id="payrollWeek" type="date">
+<label>Week containing</label><input id="payrollWeek" type="date" onchange="renderAttendance()">
 <button class="action" onclick="copyPayroll()">Copy Weekly Summary</button>
 <button class="primary" onclick="emailPayroll()">Email Weekly Summary</button>
 <div class="small" style="margin-top:8px">Exports actual attendance only: employee, days worked and total days. Site details are not included.</div>
@@ -137,29 +146,14 @@ function addPhoto(e,uid){const f=e.target.files[0];if(!f)return;const r=new File
 function removePhoto(uid,i){if(!confirm("Delete this photo?"))return;const j=db.scaffolds.find(x=>x.uid===uid);j.photos.splice(i,1);saveDB();openJob(uid)}
 const checklistItems=["Ground condition suitable","Any obstructions","Overhead power cables","Need to contact electricity network / power company","Need to speak to neighbours","Measure tight spots / restricted areas","Good lorry access","Transit required instead of lorry","Ladder gates required","Safe ladder position","Public protection required","Pedestrian access / pavement issues","Roof hazards / fragile surfaces","Loading bays required","Any asbestos concerns","Other general hazards identified"];
 function renderChecklist(){checkItems.innerHTML=checklistItems.map((x,i)=>`<label class="check"><input type="checkbox" id="check${i}"><span>${x}</span></label>`).join("")}
-function saveChecklist(){
-  const site=checkSite.value.trim();
-  if(!site){alert("Add the site name first.");return;}
-
-  db.checklists.push({
-    id:Date.now(),
-    site:site,
-    price:checkPrice.value,
-    stage:checkStage.value,
-    checked:[...document.querySelectorAll('#checkItems input[type="checkbox"]:checked')].map(x=>x.parentElement.textContent.trim()),
-    measurements:measurements.value,
-    notes:checkNotes.value,
-    created:new Date().toISOString()
-  });
-
-  saveDB();
-  alert("Site visit checklist saved.");
-  checkSite.value="";
-  checkPrice.value="";
-  checkStage.value="site-visit";
-  measurements.value="";
-  checkNotes.value="";
-  renderChecklist();
+async function compressFile(f,max=900,quality=.65){return new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=reject;r.onload=x=>{const img=new Image();img.onerror=reject;img.onload=()=>{const c=document.createElement("canvas");let w=img.width,h=img.height;if(w>h&&w>max){h=Math.round(h*max/w);w=max}else if(h>=w&&h>max){w=Math.round(w*max/h);h=max}c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);resolve(c.toDataURL("image/jpeg",quality))};img.src=x.target.result};r.readAsDataURL(f)})}
+async function saveChecklist(){
+ const site=checkSite.value.trim();if(!site){alert("Add the site name first.");return}
+ const files=[...(checkPhotos.files||[])];let photos=[];
+ try{for(const f of files)photos.push(await compressFile(f))}catch(e){alert("One of the checklist photos could not be saved.")}
+ db.checklists.push({id:Date.now(),site,price:checkPrice.value,stage:checkStage.value,photos,checked:[...document.querySelectorAll('#checkItems input[type="checkbox"]:checked')].map(x=>x.parentElement.textContent.trim()),measurements:measurements.value,notes:checkNotes.value,created:new Date().toISOString()});
+ try{saveDB()}catch(e){db.checklists.pop();alert("App storage is full. Try fewer photos.");return}
+ alert("Site visit checklist saved.");checkSite.value="";checkPrice.value="";checkStage.value="site-visit";checkPhotos.value="";measurements.value="";checkNotes.value="";renderChecklist();
 }
 
 
@@ -170,16 +164,14 @@ function setRate(v,btn){
  if(btn)btn.classList.add("selected");
  calculatePrice();
 }
+function money(v){return "£"+Math.round(v).toLocaleString("en-GB")}
 function calculatePrice(){
- const lengthEl=document.getElementById("length"),liftsEl=document.getElementById("lifts"),
- rateEl=document.getElementById("rate"),extrasEl=document.getElementById("extras"),
- areaEl=document.getElementById("areaResult"),priceEl=document.getElementById("priceResult");
- if(!lengthEl||!liftsEl||!rateEl||!extrasEl||!areaEl||!priceEl)return;
- const l=parseFloat(lengthEl.value)||0,lf=parseFloat(liftsEl.value)||0,
- r=parseFloat(rateEl.value)||0,e=parseFloat(extrasEl.value)||0,a=l*lf;
- let price=a*r+e;if(price<400)price=400;
- areaEl.textContent=a.toFixed(1)+" m²";
- priceEl.textContent="£"+Math.round(price).toLocaleString("en-GB");
+ const val=id=>parseFloat(document.getElementById(id)?.value)||0;
+ const l=val("length"),lf=val("lifts"),r=val("rate"),e=val("extras"),site=val("siteHours"),travel=val("travelHours"),fuel=val("fuelCost"),oh=val("overheadDay"),wages=val("wagesDay"),day=val("dayHours")||8,profit=val("profitPct");
+ const area=l*lf,scaffold=area*r,totalHours=site+travel,hourlyGang=(oh+wages)/day,running=totalHours*hourlyGang;
+ const costBeforeProfit=scaffold+running+fuel+e,profitAmount=costBeforeProfit*(profit/100);let quote=costBeforeProfit+profitAmount;if(quote<400)quote=400;
+ areaResult.textContent=area.toFixed(1)+" m²";priceResult.textContent=money(quote);
+ const b=document.getElementById("costBreakdown");if(b)b.innerHTML=`<b>Cost breakdown</b><div class="small" style="line-height:1.8;margin-top:6px">Scaffold: ${money(scaffold)}<br>Gang running cost: ${totalHours.toFixed(2)} hrs × ${money(hourlyGang)}/hr = ${money(running)}<br>Fuel (yard → site → yard): ${money(fuel)}<br>Extras: ${money(e)}<br><b>Subtotal before profit: ${money(costBeforeProfit)}</b><br>Profit (${profit}%): ${money(profitAmount)}</div>`;
 }
 function esc(s){return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 
@@ -190,9 +182,27 @@ function addAttendance(){
  saveDB();attName.value=attGang.value=attJob.value=attVehicle.value="";attCheck.checked=false;renderAttendance()
 }
 function updateAttendance(uid,field,value){const x=db.attendance.find(x=>String(x.uid)===String(uid));if(!x)return;x[field]=value;saveDB();renderAttendance()}
+function attendanceWeekRows(name){
+ const ref=payrollWeek.value||isoDate(new Date()),start=startOfWeek(ref),end=new Date(start);end.setDate(end.getDate()+6);
+ return db.attendance.filter(x=>x.name.trim()===name&&x.date>=isoDate(start)&&x.date<=isoDate(end)).sort((a,b)=>a.date.localeCompare(b.date));
+}
+function attendanceDayValue(x){
+ if((x.dayType||"Full Day")==="Half Day")return .5;
+ if((x.dayType||"Full Day")==="Custom Hours")return (parseFloat(x.hours)||0)/8;
+ return 1;
+}
 function renderAttendance(){
- const a=[...db.attendance].sort((x,y)=>y.date.localeCompare(x.date));
- attendanceList.innerHTML=a.length?a.map(x=>`<div class="card"><b>${esc(x.name)}</b><div class="small">${formatDate(parseDate(x.date))}${x.gang?" • "+esc(x.gang):""}</div>${x.job?`<p><b>Job:</b> ${esc(x.job)}</p>`:""}${x.vehicle?`<p><b>Vehicle:</b> ${esc(x.vehicle)}</p>`:""}<div class="small">Vehicle check: ${x.check?"Completed":"Not recorded"}</div><label>Day</label><select style="width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;border-radius:9px;font-size:16px;background:#fff" onchange="updateAttendance('${x.uid}','dayType',this.value)"><option ${(!x.dayType||x.dayType==="Full Day")?"selected":""}>Full Day</option><option ${x.dayType==="Half Day"?"selected":""}>Half Day</option><option ${x.dayType==="Custom Hours"?"selected":""}>Custom Hours</option></select>${x.dayType==="Custom Hours"?`<label>Hours worked</label><input type="number" step="0.5" min="0" value="${esc(x.hours||"")}" onchange="updateAttendance('${x.uid}','hours',this.value)">`:""}<label>Overtime hours</label><input type="number" step="0.5" min="0" value="${esc(x.overtime||"")}" onchange="updateAttendance('${x.uid}','overtime',this.value)"><label>Notes / reason</label><input value="${esc(x.notes||"")}" onchange="updateAttendance('${x.uid}','notes',this.value)"><button class="delete" onclick="deleteAttendance('${x.uid}')">Delete</button></div>`).join(""):`<div class="card">No attendance recorded yet.</div>`
+ const ref=payrollWeek.value||isoDate(new Date()),start=startOfWeek(ref),end=new Date(start);end.setDate(end.getDate()+6);
+ const rows=db.attendance.filter(x=>x.date>=isoDate(start)&&x.date<=isoDate(end));
+ const names=[...new Set(rows.map(x=>x.name.trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+ attendanceList.innerHTML=names.length?names.map(name=>{
+  const r=attendanceWeekRows(name),days=r.reduce((n,x)=>n+attendanceDayValue(x),0),ot=r.reduce((n,x)=>n+(parseFloat(x.overtime)||0),0);
+  return `<div class="card"><div class="job-head"><div><b style="font-size:19px">${esc(name)}</b><div class="small">Week: ${formatDate(start)} - ${formatDate(end)}</div></div><div style="text-align:right"><b>${days.toFixed(days%1?1:0)} days</b>${ot?`<div class="small">${ot} hrs OT</div>`:""}</div></div><button class="action" onclick="viewAttendanceWeek('${encodeURIComponent(name)}')">VIEW WEEK</button></div>`;
+ }).join(""):`<div class="card">No attendance recorded for this week.</div>`;
+}
+function viewAttendanceWeek(encodedName){
+ const name=decodeURIComponent(encodedName),rows=attendanceWeekRows(name);
+ attendanceList.innerHTML=`<button class="secondary" onclick="renderAttendance()">← Back to People</button><div class="card" style="margin-top:12px"><h3 style="margin:0">${esc(name)}</h3><div class="small">Weekly attendance details</div></div>`+rows.map(x=>`<div class="card"><b>${formatDate(parseDate(x.date))}</b>${x.gang?`<div class="small">${esc(x.gang)}</div>`:""}${x.job?`<p><b>Job:</b> ${esc(x.job)}</p>`:""}${x.vehicle?`<p><b>Vehicle:</b> ${esc(x.vehicle)}</p>`:""}<div class="small">Vehicle check: ${x.check?"Completed":"Not recorded"}</div><label>Day</label><select onchange="updateAttendance('${x.uid}','dayType',this.value)"><option ${(!x.dayType||x.dayType==="Full Day")?"selected":""}>Full Day</option><option ${x.dayType==="Half Day"?"selected":""}>Half Day</option><option ${x.dayType==="Custom Hours"?"selected":""}>Custom Hours</option></select>${x.dayType==="Custom Hours"?`<label>Hours worked</label><input type="number" step="0.5" min="0" value="${esc(x.hours||"")}" onchange="updateAttendance('${x.uid}','hours',this.value);viewAttendanceWeek('${encodeURIComponent(name)}')">`:""}<label>Overtime hours</label><input type="number" step="0.5" min="0" value="${esc(x.overtime||"")}" onchange="updateAttendance('${x.uid}','overtime',this.value);viewAttendanceWeek('${encodeURIComponent(name)}')"><label>Notes / reason</label><input value="${esc(x.notes||"")}" onchange="updateAttendance('${x.uid}','notes',this.value);viewAttendanceWeek('${encodeURIComponent(name)}')"><button class="delete" onclick="deleteAttendance('${x.uid}');viewAttendanceWeek('${encodeURIComponent(name)}')">Delete</button></div>`).join("");
 }
 function deleteAttendance(uid){if(!confirm("Delete this attendance entry?"))return;db.attendance=db.attendance.filter(x=>String(x.uid)!==String(uid));saveDB();renderAttendance()}
 
@@ -243,7 +253,7 @@ function deleteIdea(uid){if(!confirm("Delete this idea?"))return;db.ideas=db.ide
 
 if(document.getElementById("attDate")){const n=new Date();attDate.value=isoDate(n);if(document.getElementById("payrollWeek"))payrollWeek.value=isoDate(n);}
 window.addEventListener("online",updateSyncStatus);window.addEventListener("offline",updateSyncStatus);updateSyncStatus();
-["length","lifts","rate","extras"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",calculatePrice)});renderChecklist();renderDashboard();renderScaffolds();renderAttendance();renderTasks();renderIdeas();calculatePrice();
+["length","lifts","rate","extras","siteHours","travelHours","fuelCost","overheadDay","wagesDay","dayHours","profitPct"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",calculatePrice)});renderChecklist();renderDashboard();renderScaffolds();renderAttendance();renderTasks();renderIdeas();calculatePrice();
 </script>
 </body>
 </html>
