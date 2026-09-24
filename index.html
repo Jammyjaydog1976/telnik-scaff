@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="apple-touch-icon" href="telnik-app-icon.png?v=2">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#111827">
@@ -59,7 +58,7 @@ input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;b
   <option value="in-progress">Job In Progress</option>
   <option value="complete">Job Complete</option>
 </select>
-<label>Site / Job</label><input id="checkSite" placeholder="Site name or address"><div id="checkItems"></div><a class="action" style="display:block;text-align:center;text-decoration:none" href="https://www.ukpowernetworks.co.uk/" target="_blank" rel="noopener">Book shrouding of cable — UK Power Networks</a>
+<label>Site / Job</label><input id="checkSite" placeholder="Site name or address"><div id="checkItems"></div>
 <label style="display:block;margin-top:14px">Measurements / Tight Spots</label><textarea id="measurements"></textarea>
 <label>Extra Notes</label><textarea id="checkNotes"></textarea>
 <button class="primary" onclick="saveChecklist()">Save Checklist</button></div></section>
@@ -67,14 +66,15 @@ input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;b
 <section id="costing" class="page"><h2>Quick Scaffold Costing</h2><div class="card">
 <label>Length (metres)</label><input id="length" type="number" min="0" step="0.1" oninput="calculatePrice()">
 <label>Number of lifts</label><input id="lifts" type="number" min="1" step="1" value="2" oninput="calculatePrice()">
-<label>Rate per m²</label><div class="rate-grid">
+<label>Rate per m²</label>
+<div class="rate-grid">
 <button class="rate-btn selected" type="button" onclick="setRate(35,this)">£35<br><span class="small">Bucks</span></button>
 <button class="rate-btn" type="button" onclick="setRate(40,this)">£40<br><span class="small">Further out</span></button>
 <button class="rate-btn" type="button" onclick="setRate(50,this)">£50<br><span class="small">London</span></button>
-<button class="rate-btn" type="button" onclick="setRate(60,this)">£60<br><span class="small">London+</span></button></div>
+<button class="rate-btn" type="button" onclick="setRate(60,this)">£60<br><span class="small">London+</span></button>
+</div>
 <label>Rate per m² (£)</label><input id="rate" type="number" value="35" oninput="calculatePrice()">
-<label>Extras (£)</label><input id="extras" type="number" value="0" oninput="calculatePrice()">
-<button class="action" type="button" onclick="calculatePrice()">CALCULATE PRICE</button><hr>
+<label>Extras (£)</label><input id="extras" type="number" value="0"><button class="action" type="button" onclick="calculatePrice()">CALCULATE PRICE</button><hr>
 <div class="small">Chargeable area (length × lifts)</div><div style="font-size:24px;font-weight:900" id="areaResult">0 m²</div>
 <div class="small" style="margin-top:12px">Suggested Price</div><div style="font-size:32px;font-weight:900" id="priceResult">£400</div>
 <div class="small">Minimum job price £400. Use the rate that fits the location/job. Extras are added after the area calculation.</div></div></section>
@@ -88,7 +88,7 @@ input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;b
 <label class="check"><input id="attCheck" type="checkbox"><span>Vehicle / lorry check completed</span></label>
 <button class="primary" onclick="addAttendance()">Save Attendance</button></div>
 <div class="card"><h3 style="margin-top:0">Weekly Payroll Export</h3>
-<label>Week containing</label><input id="payrollWeek" type="date" onchange="renderAttendance()">
+<label>Week containing</label><input id="payrollWeek" type="date">
 <button class="action" onclick="copyPayroll()">Copy Weekly Summary</button>
 <button class="primary" onclick="emailPayroll()">Email Weekly Summary</button>
 <div class="small" style="margin-top:8px">Exports actual attendance only: employee, days worked and total days. Site details are not included.</div>
@@ -137,65 +137,315 @@ function addPhoto(e,uid){const f=e.target.files[0];if(!f)return;const r=new File
 function removePhoto(uid,i){if(!confirm("Delete this photo?"))return;const j=db.scaffolds.find(x=>x.uid===uid);j.photos.splice(i,1);saveDB();openJob(uid)}
 const checklistItems=["Ground condition suitable","Any obstructions","Overhead power cables","Need to contact electricity network / power company","Need to speak to neighbours","Measure tight spots / restricted areas","Good lorry access","Transit required instead of lorry","Ladder gates required","Safe ladder position","Public protection required","Pedestrian access / pavement issues","Roof hazards / fragile surfaces","Loading bays required","Any asbestos concerns","Other general hazards identified"];
 function renderChecklist(){checkItems.innerHTML=checklistItems.map((x,i)=>`<label class="check"><input type="checkbox" id="check${i}"><span>${x}</span></label>`).join("")}
-async function compressFile(f,max=900,quality=.65){return new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=reject;r.onload=x=>{const img=new Image();img.onerror=reject;img.onload=()=>{const c=document.createElement("canvas");let w=img.width,h=img.height;if(w>h&&w>max){h=Math.round(h*max/w);w=max}else if(h>=w&&h>max){w=Math.round(w*max/h);h=max}c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);resolve(c.toDataURL("image/jpeg",quality))};img.src=x.target.result};r.readAsDataURL(f)})}
-async function saveChecklist(){
- const site=checkSite.value.trim();if(!site){alert("Add the site name first.");return}
- const files=[...(checkPhotos.files||[])];let photos=[];
- try{for(const f of files)photos.push(await compressFile(f))}catch(e){alert("One of the checklist photos could not be saved.")}
- db.checklists.push({id:Date.now(),site,price:checkPrice.value,stage:checkStage.value,photos,checked:[...document.querySelectorAll('#checkItems input[type="checkbox"]:checked')].map(x=>x.parentElement.textContent.trim()),measurements:measurements.value,notes:checkNotes.value,created:new Date().toISOString()});
- try{saveDB()}catch(e){db.checklists.pop();alert("App storage is full. Try fewer photos.");return}
- alert("Site visit checklist saved.");checkSite.value="";checkPrice.value="";checkStage.value="site-visit";checkPhotos.value="";measurements.value="";checkNotes.value="";renderChecklist();
+function saveChecklist(){
+  const site=checkSite.value.trim();
+  if(!site){alert("Add the site name first.");return;}
+
+  db.checklists.push({
+    id:Date.now(),
+    site:site,
+    price:checkPrice.value,
+    stage:checkStage.value,
+    checked:[...document.querySelectorAll('#checkItems input[type="checkbox"]:checked')].map(x=>x.parentElement.textContent.trim()),
+    measurements:measurements.value,
+    notes:checkNotes.value,
+    created:new Date().toISOString()
+  });
+
+  saveDB();
+  alert("Site visit checklist saved.");
+  checkSite.value="";
+  checkPrice.value="";
+  checkStage.value="site-visit";
+  measurements.value="";
+  checkNotes.value="";
+  renderChecklist();
 }
 
+
 function setRate(v,btn){
- const rateEl=document.getElementById("rate");rateEl.value=v;
- document.querySelectorAll(".rate-btn").forEach(b=>b.classList.remove("selected"));if(btn)btn.classList.add("selected");calculatePrice();
+ const rateEl=document.getElementById("rate");
+ rateEl.value=v;
+ document.querySelectorAll(".rate-btn").forEach(b=>b.classList.remove("selected"));
+ if(btn)btn.classList.add("selected");
+ calculatePrice();
 }
 function calculatePrice(){
- const val=id=>parseFloat(document.getElementById(id)?.value)||0;
- const l=val("length"),lf=val("lifts"),r=val("rate"),e=val("extras"),area=l*lf;
- let price=area*r+e;if(price<400)price=400;
- areaResult.textContent=area.toFixed(1)+" m²";priceResult.textContent="£"+Math.round(price).toLocaleString("en-GB");
+ const lengthEl=document.getElementById("length"),liftsEl=document.getElementById("lifts"),
+ rateEl=document.getElementById("rate"),extrasEl=document.getElementById("extras"),
+ areaEl=document.getElementById("areaResult"),priceEl=document.getElementById("priceResult");
+ if(!lengthEl||!liftsEl||!rateEl||!extrasEl||!areaEl||!priceEl)return;
+ const l=parseFloat(lengthEl.value)||0,lf=parseFloat(liftsEl.value)||0,
+ r=parseFloat(rateEl.value)||0,e=parseFloat(extrasEl.value)||0,a=l*lf;
+ let price=a*r+e;if(price<400)price=400;
+ areaEl.textContent=a.toFixed(1)+" m²";
+ priceEl.textContent="£"+Math.round(price).toLocaleString("en-GB");
 }
 function esc(s){return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 
 function addAttendance(){
  const name=attName.value.trim(),date=attDate.value;
  if(!name||!date){alert("Add the employee name and date.");return}
- db.attendance.push({uid:Date.now(),date,name,gang:attGang.value.trim(),job:attJob.value.trim(),vehicle:attVehicle.value.trim(),check:attCheck.checked,dayType:"Full Day",hours:"",overtime:"",notes:""});
+ db.attendance.push({uid:Date.now(),date,name,gang:attGang.value.trim(),job:attJob.value.trim(),vehicle:attVehicle.value.trim(),check:attCheck.checked});
  saveDB();attName.value=attGang.value=attJob.value=attVehicle.value="";attCheck.checked=false;renderAttendance()
 }
-function updateAttendance(uid,field,value){const x=db.attendance.find(x=>String(x.uid)===String(uid));if(!x)return;x[field]=value;saveDB();renderAttendance()}
-function attendanceWeekRows(name){
- const ref=payrollWeek.value||isoDate(new Date()),start=startOfWeek(ref),end=new Date(start);end.setDate(end.getDate()+6);
- return db.attendance.filter(x=>x.name.trim()===name&&x.date>=isoDate(start)&&x.date<=isoDate(end)).sort((a,b)=>a.date.localeCompare(b.date));
-}
-function attendanceDayValue(x){if((x.dayType||"Full Day")==="Half Day")return .5;if((x.dayType||"Full Day")==="Custom Hours")return (parseFloat(x.hours)||0)/8;return 1}
 function renderAttendance(){
+ const a=[...db.attendance].sort((x,y)=>y.date.localeCompare(x.date));
+ attendanceList.innerHTML=a.length?a.map(x=>`<div class="card"><b>${esc(x.name)}</b><div class="small">${formatDate(parseDate(x.date))}${x.gang?" • "+esc(x.gang):""}</div>${x.job?`<p><b>Job:</b> ${esc(x.job)}</p>`:""}${x.vehicle?`<div><b>Vehicle:</b> ${esc(x.vehicle)}</div>`:""}<div class="small">Vehicle check: ${x.check?"Completed":"Not recorded"}</div><button class="delete" onclick="deleteAttendance(${x.uid})">Delete</button></div>`).join(""):`<div class="card">No attendance recorded yet.</div>`
+}
+function deleteAttendance(uid){if(!confirm("Delete this attendance entry?"))return;db.attendance=db.attendance.filter(x=>x.uid!==uid);saveDB();renderAttendance()}
+
+function startOfWeek(s){const d=parseDate(s);const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return d}
+function isoDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function payrollText(){
  const ref=payrollWeek.value||isoDate(new Date()),start=startOfWeek(ref),end=new Date(start);end.setDate(end.getDate()+6);
- const rows=db.attendance.filter(x=>x.date>=isoDate(start)&&x.date<=isoDate(end));const names=[...new Set(rows.map(x=>x.name.trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
- attendanceList.innerHTML=names.length?names.map(name=>{const r=attendanceWeekRows(name),days=r.reduce((n,x)=>n+attendanceDayValue(x),0),ot=r.reduce((n,x)=>n+(parseFloat(x.overtime)||0),0);return `<div class="card"><div class="job-head"><div><b style="font-size:19px">${esc(name)}</b><div class="small">Week: ${formatDate(start)} - ${formatDate(end)}</div></div><div style="text-align:right"><b>${days.toFixed(days%1?1:0)} days</b>${ot?`<div class="small">${ot} hrs OT</div>`:""}</div></div><button class="action" onclick="viewAttendanceWeek('${encodeURIComponent(name)}')">VIEW WEEK</button></div>`}).join(""):`<div class="card">No attendance recorded for this week.</div>`;
+ const from=isoDate(start),to=isoDate(end),rows=db.attendance.filter(x=>x.date>=from&&x.date<=to);
+ const people={};rows.forEach(x=>{const key=x.name.trim();if(!people[key])people[key]=new Set();people[key].add(x.date)});
+ let out=`TELNIK WEEKLY ATTENDANCE\nWeek: ${formatDate(start)} - ${formatDate(end)}\n\n`;
+ const names=Object.keys(people).sort((a,b)=>a.localeCompare(b));
+ if(!names.length)return out+"No attendance recorded for this week.";
+ names.forEach(name=>{const dates=[...people[name]].sort();out+=`${name}: ${dates.map(d=>formatDate(parseDate(d))).join(", ")} — ${dates.length} day${dates.length===1?"":"s"}\n`});
+ return out;
 }
-function viewAttendanceWeek(encodedName){
- const name=decodeURIComponent(encodedName),rows=attendanceWeekRows(name);
- attendanceList.innerHTML=`<button class="secondary" onclick="renderAttendance()">← Back to People</button><div class="card" style="margin-top:12px"><h3 style="margin:0">${esc(name)}</h3><div class="small">Weekly attendance details</div></div>`+rows.map(x=>`<div class="card"><b>${formatDate(parseDate(x.date))}</b>${x.gang?`<div class="small">${esc(x.gang)}</div>`:""}${x.job?`<p><b>Job:</b> ${esc(x.job)}</p>`:""}${x.vehicle?`<p><b>Vehicle:</b> ${esc(x.vehicle)}</p>`:""}<div class="small">Vehicle check: ${x.check?"Completed":"Not recorded"}</div><label>Day</label><select onchange="updateAttendance('${x.uid}','dayType',this.value)"><option ${(!x.dayType||x.dayType==="Full Day")?"selected":""}>Full Day</option><option ${x.dayType==="Half Day"?"selected":""}>Half Day</option><option ${x.dayType==="Custom Hours"?"selected":""}>Custom Hours</option></select>${x.dayType==="Custom Hours"?`<label>Hours worked</label><input type="number" step="0.5" min="0" value="${esc(x.hours||"")}" onchange="updateAttendance('${x.uid}','hours',this.value);viewAttendanceWeek('${encodeURIComponent(name)}')">`:""}<label>Overtime hours</label><input type="number" step="0.5" min="0" value="${esc(x.overtime||"")}" onchange="updateAttendance('${x.uid}','overtime',this.value);viewAttendanceWeek('${encodeURIComponent(name)}')"><label>Notes / reason</label><input value="${esc(x.notes||"")}" onchange="updateAttendance('${x.uid}','notes',this.value);viewAttendanceWeek('${encodeURIComponent(name)}')"><button class="delete" onclick="deleteAttendance('${x.uid}');viewAttendanceWeek('${encodeURIComponent(name)}')">Delete</button></div>`).join("");
+async function copyPayroll(){const t=payrollText();try{await navigator.clipboard.writeText(t);alert("Weekly attendance copied. Paste it straight into Amanda's email.")}catch(e){prompt("Copy this weekly attendance:",t)}}
+function emailPayroll(){const t=payrollText();const ref=payrollWeek.value||isoDate(new Date()),start=startOfWeek(ref);window.location.href=`mailto:?subject=${encodeURIComponent("Telnik weekly attendance - week of "+formatDate(start))}&body=${encodeURIComponent(t)}`}
+
+function addTask(){
+ const text=taskText.value.trim();if(!text){alert("Type the task first.");return}
+ db.tasks.push({uid:Date.now(),text,due:taskDate.value,done:false});saveDB();taskText.value=taskDate.value="";renderTasks()
 }
-function deleteAttendance(uid){if(!confirm("Delete this attendance entry?"))return;db.attendance=db.attendance.filter(x=>String(x.uid)!==String(uid));saveDB();renderAttendance()}
+function renderTasks(){
+ const a=[...db.tasks].sort((x,y)=>(x.done-y.done)||String(x.due).localeCompare(String(y.due)));
+ taskList.innerHTML=a.length?a.map(x=>`<div class="card"><label class="check"><input type="checkbox" ${x.done?"checked":""} onchange="toggleTask(${x.uid})"><span style="${x.done?"text-decoration:line-through":""}">${esc(x.text)}</span></label>${x.due?`<div class="small">Due: ${formatDate(parseDate(x.due))}</div>`:""}<button class="delete" onclick="deleteTask(${x.uid})">Delete</button></div>`).join(""):`<div class="card">No management tasks added yet.</div>`
+}
+function toggleTask(uid){const x=db.tasks.find(x=>x.uid===uid);x.done=!x.done;saveDB();renderTasks()}
+function deleteTask(uid){if(!confirm("Delete this task?"))return;db.tasks=db.tasks.filter(x=>x.uid!==uid);saveDB();renderTasks()}
+function addIdea(){
+ const text=ideaText.value.trim();if(!text){alert("Type the idea first.");return}
+ db.ideas.unshift({uid:Date.now(),text,created:new Date().toISOString()});saveDB();ideaText.value="";renderIdeas()
+}
+function renderIdeas(){
+ ideaList.innerHTML=db.ideas.length?db.ideas.map(x=>`<div class="card"><b>Idea</b><p>${esc(x.text)}</p><button class="delete" onclick="deleteIdea(${x.uid})">Delete</button></div>`).join(""):`<div class="card">No ideas saved yet.</div>`
+}
+function deleteIdea(uid){if(!confirm("Delete this idea?"))return;db.ideas=db.ideas.filter(x=>x.uid!==uid);saveDB();renderIdeas()}
+
+if(document.getElementById("attDate")){const n=new Date();attDate.value=isoDate(n);if(document.getElementById("payrollWeek"))payrollWeek.value=isoDate(n);}
+window.addEventListener("online",updateSyncStatus);window.addEventListener("offline",updateSyncStatus);updateSyncStatus();
+["length","lifts","rate","extras"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",calculatePrice)});renderChecklist();renderDashboard();renderScaffolds();renderAttendance();renderTasks();renderIdeas();calculatePrice();
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>Telnik Scaff</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#f3f4f6;color:#111827}
+header{background:#111827;color:#fff;padding:18px 16px 15px;text-align:center}.logo{font-size:32px;font-weight:900;letter-spacing:2px}.logo span{color:#f59e0b}.subtitle{font-size:13px;color:#d1d5db}
+nav{display:flex;overflow-x:auto;background:#fff;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:10}nav button{border:0;background:#fff;padding:14px 15px;font-weight:700;white-space:nowrap;cursor:pointer}nav button.active{color:#b45309;border-bottom:3px solid #f59e0b}
+main{max-width:900px;margin:auto;padding:16px}.page{display:none}.page.active{display:block}h2{margin:4px 0 14px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px}.stat{text-align:center;cursor:pointer}.stat .number{font-size:32px;font-weight:900}.danger{color:#dc2626}.warning{color:#d97706}.good{color:#15803d}
+button.primary,.action{width:100%;border:0;border-radius:10px;padding:13px;font-size:16px;font-weight:800;cursor:pointer;margin-top:8px}.primary{background:#111827;color:#fff}.action{background:#f59e0b;color:#111827}.secondary{border:1px solid #ccc;background:#fff;border-radius:9px;padding:10px 12px;font-weight:700;cursor:pointer}.delete{border:0;background:#fee2e2;color:#991b1b;border-radius:9px;padding:10px;font-weight:700;cursor:pointer}
+input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;border-radius:9px;font-size:16px;background:#fff}textarea{min-height:90px;resize:vertical}label{font-weight:700;font-size:14px}.job-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.small{font-size:13px;color:#6b7280}.badge{display:inline-block;padding:5px 8px;border-radius:20px;font-size:12px;font-weight:800;margin-top:5px}.badge.red{background:#fee2e2;color:#991b1b}.badge.amber{background:#fef3c7;color:#92400e}.badge.green{background:#dcfce7;color:#166534}.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.photo-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}.check{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee}.check input{width:auto;margin-top:3px}hr{border:0;border-top:1px solid #eee;margin:16px 0}.rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 12px}
+.rate-btn{border:1px solid #d1d5db;background:#fff;border-radius:9px;padding:11px 6px;font-weight:800;cursor:pointer}
+.rate-btn.selected{background:#111827;color:#fff;border-color:#111827}
+.pulled{border:2px solid #dc2626}.history-item{padding:10px 0;border-bottom:1px solid #eee}.history-item:last-child{border-bottom:0}
+.sync{font-size:12px;margin-top:6px;color:#d1d5db}
+@media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="logo">TELNIK <span>SCAFF</span></div><div class="subtitle">Scaffold Management</div><div id="syncStatus" class="sync">Saved on this device</div></header>
+<nav><button onclick="showPage('today',this)" class="active">Today</button><button onclick="showPage('register',this)">Scaffolds</button><button onclick="showPage('add',this)">Add Job</button><button onclick="showPage('checklist',this)">New Job Checklist</button><button onclick="showPage('costing',this)">Pricing</button><button onclick="showPage('attendance',this)">Attendance</button><button onclick="showPage('tasks',this)">Tasks</button><button onclick="showPage('ideas',this)">New Ideas</button></nav>
+<main>
+<section id="today" class="page active"><h2>Today</h2><div class="grid">
+<div class="card stat" onclick="showFiltered('overdue')"><div class="number danger" id="overdueCount">0</div><b>Overdue Tags</b></div>
+<div class="card stat" onclick="showFiltered('today')"><div class="number warning" id="todayCount">0</div><b>Due Today</b></div>
+<div class="card stat" onclick="showFiltered('soon')"><div class="number" id="soonCount">0</div><b>Due Next 2 Days</b></div>
+<div class="card stat" onclick="showPage('register')"><div class="number good" id="totalCount">0</div><b>Live Scaffolds</b></div></div>
+<div class="card"><h3 style="margin-top:0">Priority Jobs</h3><div id="priorityJobs"></div></div></section>
+
+<section id="register" class="page"><h2>Scaffold Register</h2><div id="filterTitle" class="small"></div><div id="scaffoldList"></div></section>
+
+<section id="add" class="page"><h2>Add Scaffold Job</h2><div class="card">
+<label>Job / Site Name</label><input id="jobName" placeholder="e.g. Flint House">
+<label>Address</label><textarea id="jobAddress" placeholder="Full site address"></textarea>
+<label>Job ID</label><input id="jobId" placeholder="e.g. 2609-1626">
+<label>Erection / Last Tag Date</label><input id="jobDate" type="date">
+<label>Contact / Notes</label><textarea id="jobNotes" placeholder="Access details, contact, scaffold notes..."></textarea>
+<button class="primary" onclick="addJob()">Save Job</button></div></section>
+
+<section id="jobDetail" class="page"><button class="secondary" onclick="showPage('register')">← Back to Register</button><div id="jobDetailContent" style="margin-top:12px"></div></section>
+
+<section id="checklist" class="page"><h2>New Job Checklist</h2><div class="card">
+ <label>Price / Quote (£)</label>
+<input id="checkPrice" type="number" step="0.01" placeholder="Enter quoted price">
+
+<label style="display:block;margin-top:14px">Job Photos</label>
+<input id="checkPhotos" type="file" accept="image/*" multiple>
+
+<label style="display:block;margin-top:14px">Job Stage</label>
+<select id="checkStage">
+  <option value="site-visit">Site Visit</option>
+  <option value="quoted">Quoted</option>
+  <option value="accepted">Quote Accepted</option>
+  <option value="in-progress">Job In Progress</option>
+  <option value="complete">Job Complete</option>
+</select>
+<label>Site / Job</label><input id="checkSite" placeholder="Site name or address"><div id="checkItems"></div>
+<label style="display:block;margin-top:14px">Measurements / Tight Spots</label><textarea id="measurements"></textarea>
+<label>Extra Notes</label><textarea id="checkNotes"></textarea>
+<button class="primary" onclick="saveChecklist()">Save Checklist</button></div></section>
+
+<section id="costing" class="page"><h2>Quick Scaffold Costing</h2><div class="card">
+<label>Length (metres)</label><input id="length" type="number" min="0" step="0.1" oninput="calculatePrice()">
+<label>Number of lifts</label><input id="lifts" type="number" min="1" step="1" value="2" oninput="calculatePrice()">
+<label>Rate per m²</label>
+<div class="rate-grid">
+<button class="rate-btn selected" type="button" onclick="setRate(35,this)">£35<br><span class="small">Bucks</span></button>
+<button class="rate-btn" type="button" onclick="setRate(40,this)">£40<br><span class="small">Further out</span></button>
+<button class="rate-btn" type="button" onclick="setRate(50,this)">£50<br><span class="small">London</span></button>
+<button class="rate-btn" type="button" onclick="setRate(60,this)">£60<br><span class="small">London+</span></button>
+</div>
+<label>Rate per m² (£)</label><input id="rate" type="number" value="35" oninput="calculatePrice()">
+<label>Extras (£)</label><input id="extras" type="number" value="0"><button class="action" type="button" onclick="calculatePrice()">CALCULATE PRICE</button><hr>
+<div class="small">Chargeable area (length × lifts)</div><div style="font-size:24px;font-weight:900" id="areaResult">0 m²</div>
+<div class="small" style="margin-top:12px">Suggested Price</div><div style="font-size:32px;font-weight:900" id="priceResult">£400</div>
+<div class="small">Minimum job price £400. Use the rate that fits the location/job. Extras are added after the area calculation.</div></div></section>
+
+<section id="attendance" class="page"><h2>Attendance</h2><div class="card">
+<label>Date</label><input id="attDate" type="date">
+<label>Employee</label><input id="attName" placeholder="Name">
+<label>Gang</label><input id="attGang" placeholder="Gang 1 / Gang 2">
+<label>Job / Site</label><input id="attJob" placeholder="Job or site">
+<label>Vehicle</label><input id="attVehicle" placeholder="Lorry / Transit / Van">
+<label class="check"><input id="attCheck" type="checkbox"><span>Vehicle / lorry check completed</span></label>
+<button class="primary" onclick="addAttendance()">Save Attendance</button></div>
+<div class="card"><h3 style="margin-top:0">Weekly Payroll Export</h3>
+<label>Week containing</label><input id="payrollWeek" type="date">
+<button class="action" onclick="copyPayroll()">Copy Weekly Summary</button>
+<button class="primary" onclick="emailPayroll()">Email Weekly Summary</button>
+<div class="small" style="margin-top:8px">Exports actual attendance only: employee, days worked and total days. Site details are not included.</div>
+</div><div id="attendanceList"></div></section>
+
+<section id="tasks" class="page"><h2>Tasks</h2><div class="card">
+<label>New Task</label><input id="taskText" placeholder="What needs doing?">
+<label>Due Date</label><input id="taskDate" type="date">
+<button class="primary" onclick="addTask()">Add Task</button></div><div id="taskList"></div></section>
+
+<section id="ideas" class="page"><h2>New Ideas</h2><div class="card">
+<label>Idea / Improvement</label><textarea id="ideaText" placeholder="Add an idea for Telnik, the app, jobs or management..."></textarea>
+<button class="primary" onclick="addIdea()">Save Idea</button></div><div id="ideaList"></div></section>
+
+</main>
+<script>
+const db=JSON.parse(localStorage.getItem("telnikScaffDB"))||{};
+db.scaffolds=db.scaffolds||[];
+db.checklists=db.checklists||[];
+db.attendance=db.attendance||[];
+db.tasks=db.tasks||[];
+db.ideas=db.ideas||[];
+db.scaffolds.forEach(j=>{j.history=j.history||[];j.tagPulled=!!j.tagPulled;j.pullReason=j.pullReason||""});
+function saveDB(){localStorage.setItem("telnikScaffDB",JSON.stringify(db));updateSyncStatus()}
+function updateSyncStatus(){const el=document.getElementById("syncStatus");if(!el)return;el.textContent=navigator.onLine?"Saved on this device • Online":"Saved on this device • Offline";}
+function parseDate(s){return new Date(s+"T12:00:00")}
+function nextDate(s){const d=parseDate(s);d.setDate(d.getDate()+7);return d}
+function daysUntil(date){const now=new Date();now.setHours(12,0,0,0);const d=new Date(date);d.setHours(12,0,0,0);return Math.round((d-now)/86400000)}
+function formatDate(d){return d.toLocaleDateString("en-GB")}
+function statusFor(j){const d=daysUntil(nextDate(j.date));if(j.tagPulled)return{text:"TAG PULLED • DO NOT USE",cls:"red",days:-999};if(d<0)return{text:`OVERDUE ${Math.abs(d)} DAY${Math.abs(d)==1?"":"S"}`,cls:"red",days:d};if(d===0)return{text:"DUE TODAY",cls:"red",days:d};if(d<=2)return{text:`DUE IN ${d} DAY${d==1?"":"S"}`,cls:"amber",days:d};return{text:`DUE IN ${d} DAYS`,cls:"green",days:d}}
+function showPage(id,btn){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");if(id==="register")renderScaffolds();if(id==="today")renderDashboard();if(id==="attendance")renderAttendance();if(id==="tasks")renderTasks();if(id==="ideas")renderIdeas();window.scrollTo(0,0)}
+function addJob(){const name=jobName.value.trim(),address=jobAddress.value.trim(),id=jobId.value.trim(),date=jobDate.value,notes=jobNotes.value.trim();if(!name||!date){alert("Add the site name and erection/tag date first.");return}db.scaffolds.push({uid:Date.now(),name,address,jobId:id,date,notes,photos:[],history:[],tagPulled:false,pullReason:""});saveDB();jobName.value=jobAddress.value=jobId.value=jobDate.value=jobNotes.value="";renderDashboard();showPage("register")}
+function jobCard(j){const s=statusFor(j);return `<div class="card"><div class="job-head"><div><b style="font-size:18px">${esc(j.name)}</b>${j.jobId?`<div class="small">Job ID: ${esc(j.jobId)}</div>`:""}<span class="badge ${s.cls}">${s.text}</span></div></div>${j.address?`<p>${esc(j.address)}</p>`:""}<div class="small">Last tag: ${formatDate(parseDate(j.date))}<br>Next tag: ${formatDate(nextDate(j.date))}</div><button class="action" onclick="openJob(${j.uid})">Open Job</button>${j.address?`<button class="primary" onclick="openMaps('${encodeURIComponent(j.address)}')">📍 DRIVE THERE / MAPS</button>`:""}</div>`}
+function renderScaffolds(filter="all"){let jobs=[...db.scaffolds];if(filter==="overdue")jobs=jobs.filter(j=>statusFor(j).days<0);if(filter==="today")jobs=jobs.filter(j=>statusFor(j).days===0);if(filter==="soon")jobs=jobs.filter(j=>statusFor(j).days>0&&statusFor(j).days<=2);jobs.sort((a,b)=>statusFor(a).days-statusFor(b).days);filterTitle.innerHTML=filter==="all"?"All current scaffolds":`Filtered jobs &nbsp; <button class="secondary" onclick="renderScaffolds()">Show All</button>`;scaffoldList.innerHTML=jobs.length?jobs.map(jobCard).join(""):`<div class="card">No jobs in this section.</div>`}
+function showFiltered(t){showPage("register");renderScaffolds(t)}
+function renderDashboard(){const ss=db.scaffolds.map(statusFor);overdueCount.textContent=ss.filter(s=>s.days<0).length;todayCount.textContent=ss.filter(s=>s.days===0).length;soonCount.textContent=ss.filter(s=>s.days>0&&s.days<=2).length;totalCount.textContent=db.scaffolds.length;const p=[...db.scaffolds].filter(j=>statusFor(j).days<=2).sort((a,b)=>statusFor(a).days-statusFor(b).days);priorityJobs.innerHTML=p.length?p.map(j=>{const s=statusFor(j);return `<div style="padding:10px 0;border-bottom:1px solid #eee;cursor:pointer" onclick="openJob(${j.uid})"><b>${esc(j.name)}</b><br><span class="badge ${s.cls}">${s.text}</span></div>`}).join(""):`<div class="small">Nothing urgent. You're all caught up.</div>`}
+function openJob(uid){const j=db.scaffolds.find(x=>x.uid===uid);if(!j)return;const s=statusFor(j);j.history=j.history||[];jobDetailContent.innerHTML=`<div class="card ${j.tagPulled?"pulled":""}"><h2>${esc(j.name)}</h2>${j.jobId?`<div class="small">Job ID: ${esc(j.jobId)}</div>`:""}<span class="badge ${s.cls}">${s.text}</span>${j.address?`<p>${esc(j.address)}</p>`:""}<p class="small">Last tag: ${formatDate(parseDate(j.date))}<br>Next inspection: ${formatDate(nextDate(j.date))}</p>${j.address?`<button class="action" onclick="openMaps('${encodeURIComponent(j.address)}')">📍 DRIVE THERE / MAPS</button>`:""}${j.tagPulled?`<div class="card pulled" style="margin-top:12px"><b>TAG PULLED / DO NOT USE</b><p>${esc(j.pullReason||"No reason recorded")}</p><button class="primary" onclick="reinstateTag(${uid})">Reinstate Tag / Issue Rectified</button></div>`:`<button class="primary" onclick="completeInspection(${uid})">Complete Inspection / Update Tag</button><button class="delete" style="width:100%;margin-top:8px" onclick="pullTag(${uid})">Pull Tag / Scaffold Not Safe</button>`}<hr><label>Job Notes</label><textarea id="detailNotes">${esc(j.notes||"")}</textarea><button class="secondary" onclick="saveNotes(${uid})">Save Notes</button><hr><h3>Inspection / Tag History</h3><div>${j.history.length?[...j.history].reverse().map(h=>`<div class="history-item"><b>${esc(h.type)}</b><div class="small">${formatDate(parseDate(h.date))}${h.initials?" • "+esc(h.initials):""}</div>${h.notes?`<div>${esc(h.notes)}</div>`:""}</div>`).join(""):`<div class="small">No inspection history recorded yet.</div>`}</div><hr><h3>Site Photos</h3><input type="file" accept="image/*" capture="environment" onchange="addPhoto(event,${uid})"><div class="photo-grid">${(j.photos||[]).map((p,i)=>`<img src="${p}" onclick="removePhoto(${uid},${i})">`).join("")}</div><hr><button class="delete" onclick="deleteJob(${uid})">Delete Job</button></div>`;showPage("jobDetail")}
+function completeInspection(uid){const j=db.scaffolds.find(x=>x.uid===uid);if(!j)return;const initials=prompt("Inspector initials (e.g. JC):","JC");if(initials===null)return;const notes=prompt("Inspection notes / defects found (leave blank if none):","");if(notes===null)return;const n=new Date(),d=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`;j.date=d;j.history=j.history||[];j.history.push({date:d,type:"Inspection completed / tag updated",initials:initials.trim(),notes:notes.trim()});j.tagPulled=false;j.pullReason="";saveDB();renderDashboard();openJob(uid)}
+function pullTag(uid){const j=db.scaffolds.find(x=>x.uid===uid);if(!j)return;const reason=prompt("Why is the tag being pulled?");if(reason===null||!reason.trim()){alert("Add the reason the tag is being pulled.");return}const initials=prompt("Inspector initials (e.g. JC):","JC");if(initials===null)return;const n=new Date(),d=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`;j.tagPulled=true;j.pullReason=reason.trim();j.history=j.history||[];j.history.push({date:d,type:"TAG PULLED / DO NOT USE",initials:initials.trim(),notes:reason.trim()});saveDB();renderDashboard();openJob(uid)}
+function reinstateTag(uid){const j=db.scaffolds.find(x=>x.uid===uid);if(!j)return;const notes=prompt("What was rectified / checked before reinstating?","Issue rectified and scaffold checked");if(notes===null)return;const initials=prompt("Inspector initials (e.g. JC):","JC");if(initials===null)return;const n=new Date(),d=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`;j.tagPulled=false;j.pullReason="";j.date=d;j.history=j.history||[];j.history.push({date:d,type:"Tag reinstated / issue rectified",initials:initials.trim(),notes:notes.trim()});saveDB();renderDashboard();openJob(uid)}
+function renewTag(uid){completeInspection(uid)}
+function saveNotes(uid){db.scaffolds.find(x=>x.uid===uid).notes=detailNotes.value;saveDB();alert("Notes saved.")}
+function deleteJob(uid){if(!confirm("Delete this scaffold job?"))return;db.scaffolds=db.scaffolds.filter(x=>x.uid!==uid);saveDB();renderDashboard();showPage("register")}
+function openMaps(a){window.open("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(decodeURIComponent(a)),"_blank")}
+function addPhoto(e,uid){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=x=>{const img=new Image();img.onload=()=>{const c=document.createElement("canvas");let w=img.width,h=img.height,max=900;if(w>h&&w>max){h=Math.round(h*max/w);w=max}else if(h>=w&&h>max){w=Math.round(w*max/h);h=max}c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);const j=db.scaffolds.find(x=>x.uid===uid);j.photos=j.photos||[];j.photos.push(c.toDataURL("image/jpeg",.65));try{saveDB();openJob(uid)}catch(err){j.photos.pop();alert("App photo storage is full.")}};img.src=x.target.result};r.readAsDataURL(f)}
+function removePhoto(uid,i){if(!confirm("Delete this photo?"))return;const j=db.scaffolds.find(x=>x.uid===uid);j.photos.splice(i,1);saveDB();openJob(uid)}
+const checklistItems=["Ground condition suitable","Any obstructions","Overhead power cables","Need to contact electricity network / power company","Need to speak to neighbours","Measure tight spots / restricted areas","Good lorry access","Transit required instead of lorry","Ladder gates required","Safe ladder position","Public protection required","Pedestrian access / pavement issues","Roof hazards / fragile surfaces","Loading bays required","Any asbestos concerns","Other general hazards identified"];
+function renderChecklist(){checkItems.innerHTML=checklistItems.map((x,i)=>`<label class="check"><input type="checkbox" id="check${i}"><span>${x}</span></label>`).join("")}
+function saveChecklist(){
+  const site=checkSite.value.trim();
+  if(!site){alert("Add the site name first.");return;}
+
+  db.checklists.push({
+    id:Date.now(),
+    site:site,
+    price:checkPrice.value,
+    stage:checkStage.value,
+    checked:[...document.querySelectorAll('#checkItems input[type="checkbox"]:checked')].map(x=>x.parentElement.textContent.trim()),
+    measurements:measurements.value,
+    notes:checkNotes.value,
+    created:new Date().toISOString()
+  });
+
+  saveDB();
+  alert("Site visit checklist saved.");
+  checkSite.value="";
+  checkPrice.value="";
+  checkStage.value="site-visit";
+  measurements.value="";
+  checkNotes.value="";
+  renderChecklist();
+}
+
+
+function setRate(v,btn){
+ const rateEl=document.getElementById("rate");
+ rateEl.value=v;
+ document.querySelectorAll(".rate-btn").forEach(b=>b.classList.remove("selected"));
+ if(btn)btn.classList.add("selected");
+ calculatePrice();
+}
+function calculatePrice(){
+ const lengthEl=document.getElementById("length"),liftsEl=document.getElementById("lifts"),
+ rateEl=document.getElementById("rate"),extrasEl=document.getElementById("extras"),
+ areaEl=document.getElementById("areaResult"),priceEl=document.getElementById("priceResult");
+ if(!lengthEl||!liftsEl||!rateEl||!extrasEl||!areaEl||!priceEl)return;
+ const l=parseFloat(lengthEl.value)||0,lf=parseFloat(liftsEl.value)||0,
+ r=parseFloat(rateEl.value)||0,e=parseFloat(extrasEl.value)||0,a=l*lf;
+ let price=a*r+e;if(price<400)price=400;
+ areaEl.textContent=a.toFixed(1)+" m²";
+ priceEl.textContent="£"+Math.round(price).toLocaleString("en-GB");
+}
+function esc(s){return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+
+function addAttendance(){
+ const name=attName.value.trim(),date=attDate.value;
+ if(!name||!date){alert("Add the employee name and date.");return}
+ db.attendance.push({uid:Date.now(),date,name,gang:attGang.value.trim(),job:attJob.value.trim(),vehicle:attVehicle.value.trim(),check:attCheck.checked});
+ const lastAttendance=db.attendance[db.attendance.length-1];lastAttendance.dayType="Full Day";lastAttendance.hours="";lastAttendance.overtime="";lastAttendance.notes="";
+ saveDB();attName.value=attGang.value=attJob.value=attVehicle.value="";attCheck.checked=false;renderAttendance()
+}
+function renderAttendance(){
+ const a=[...db.attendance].sort((x,y)=>y.date.localeCompare(x.date));
+ 
+ attendanceList.innerHTML=a.length?a.map(x=><div class="card"><b>${esc(x.name)}</b><div class="small">${formatDate(parseDate(x.date))}${x.gang?" • "+esc(x.gang):""}</div>${x.job?<p><b>Job:</b> ${esc(x.job)}</p>:""}${x.vehicle?<p><b>Vehicle:</b> ${esc(x.vehicle)}</p>:""}<label>Day</label><select onchange="updateAttendance('${x.uid}','dayType',this.value)"><option ${(!x.dayType||x.dayType==="Full Day")?"selected":""}>Full Day</option><option ${x.dayType==="Half Day"?"selected":""}>Half Day</option><option ${x.dayType==="Custom Hours"?"selected":""}>Custom Hours</option></select>${x.dayType==="Custom Hours"?<label>Hours worked</label><input type="number" step="0.5" min="0" value="${esc(x.hours||"")}" onchange="updateAttendance('${x.uid}','hours',this.value)">:""}<label>Overtime hours</label><input type="number" step="0.5" min="0" value="${esc(x.overtime||"")}" onchange="updateAttendance('${x.uid}','overtime',this.value)"><label>Notes / reason</label><input value="${esc(x.notes||"")}" onchange="updateAttendance('${x.uid}','notes',this.value)"><button class="danger" onclick="deleteAttendance('${x.uid}')">Delete</button></div>).join(""):<div class="card small">No attendance recorded yet.</div>;
+function deleteAttendance(uid){if(!confirm("Delete this attendance entry?"))return;db.attendance=db.attendance.filter(x=>x.uid!==uid);saveDB();renderAttendance()}
 
 function startOfWeek(s){const d=parseDate(s);const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return d}
 function isoDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 function payrollText(){
  const ref=payrollWeek.value||isoDate(new Date()),start=startOfWeek(ref),end=new Date(start);end.setDate(end.getDate()+6);
  const rows=db.attendance.filter(x=>x.date>=isoDate(start)&&x.date<=isoDate(end));
- let out=`TELNIK WEEKLY ATTENDANCE\nWeek: ${formatDate(start)} - ${formatDate(end)}\n\n`;
+ let out=TELNIK WEEKLY ATTENDANCE\nWeek: ${formatDate(start)} - ${formatDate(end)}\n\n;
  if(!rows.length)return out+"No attendance recorded for this week.";
  const people={};
- rows.forEach(x=>{const key=x.name.trim();if(!people[key])people[key]=[];people[key].push(x)});
+ rows.forEach(x=>{if(!people[x.name])people[x.name]=[];people[x.name].push(x)});
  Object.keys(people).sort((a,b)=>a.localeCompare(b)).forEach(name=>{
-  out+=`${name}:\n`;
+  out+=${name}:\n;
   people[name].sort((a,b)=>a.date.localeCompare(b.date)).forEach(x=>{
    const day=x.dayType||"Full Day";
-   const worked=day==="Custom Hours"&&x.hours?`${x.hours} hours`:day;
+   const worked=day==="Custom Hours"&&x.hours?${x.hours} hours:day;
    out+=`  ${formatDate(parseDate(x.date))} - ${worked}`;
    if(x.overtime)out+=` + ${x.overtime} hrs overtime`;
    if(x.notes)out+=` - ${x.notes}`;
