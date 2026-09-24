@@ -81,7 +81,7 @@ input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;b
 
 <section id="attendance" class="page"><h2>Attendance</h2><div class="card">
 <label>Date</label><input id="attDate" type="date">
-<label>Employee</label><input id="attName" placeholder="Name">
+<label>Employee</label><input id="attName" placeholder="Name" list="employeeNames" autocomplete="off"><datalist id="employeeNames"></datalist>
 <label>Gang</label><input id="attGang" placeholder="Gang 1 / Gang 2">
 <label>Job / Site</label><input id="attJob" placeholder="Job or site">
 <label>Vehicle</label><input id="attVehicle" placeholder="Lorry / Transit / Van">
@@ -92,6 +92,9 @@ input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;b
 <button class="action" onclick="copyPayroll()">Copy Weekly Summary</button>
 <button class="primary" onclick="emailPayroll()">Email Weekly Summary</button>
 <div class="small" style="margin-top:8px">Exports actual attendance only: employee, days worked and total days. Site details are not included.</div>
+<button class="action" onclick="exportBackup()">Export Full App Backup</button>
+<label style="margin-top:12px">Restore Backup</label><input id="backupFile" type="file" accept="application/json,.json" onchange="importBackup(this.files[0])">
+<div class="small">Keep the backup file somewhere safe. Restore only replaces data after you confirm.</div>
 </div><div id="attendanceList"></div></section>
 
 <section id="tasks" class="page"><h2>Tasks</h2><div class="card">
@@ -183,18 +186,31 @@ function calculatePrice(){
 }
 function esc(s){return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 
+function rememberedNames(){return [...new Set(db.attendance.map(x=>(x.name||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b))}
+function refreshEmployeeNames(){const dl=document.getElementById("employeeNames");if(dl)dl.innerHTML=rememberedNames().map(n=>`<option value="${esc(n)}"></option>`).join("")}
 function addAttendance(){
  const name=attName.value.trim(),date=attDate.value;
  if(!name||!date){alert("Add the employee name and date.");return}
  db.attendance.push({uid:Date.now(),date,name,gang:attGang.value.trim(),job:attJob.value.trim(),vehicle:attVehicle.value.trim(),check:attCheck.checked,dayType:"Full Day",hours:"",overtime:"",notes:""});
- saveDB();attName.value=attGang.value=attJob.value=attVehicle.value="";attCheck.checked=false;renderAttendance()
+ saveDB();attName.value=attGang.value=attJob.value=attVehicle.value="";attCheck.checked=false;refreshEmployeeNames();renderAttendance()
 }
 function updateAttendance(uid,field,value){const x=db.attendance.find(x=>String(x.uid)===String(uid));if(!x)return;x[field]=value;saveDB();renderAttendance()}
+function attendanceValue(x){const t=x.dayType||"Full Day";if(t==="Half Day")return .5;if(t==="Custom Hours")return Number(x.hours||0)/8;return 1}
+function togglePerson(id){const el=document.getElementById(id);if(el)el.style.display=el.style.display==="none"?"block":"none"}
 function renderAttendance(){
- const a=[...db.attendance].sort((x,y)=>y.date.localeCompare(x.date));
- attendanceList.innerHTML=a.length?a.map(x=>`<div class="card"><b>${esc(x.name)}</b><div class="small">${formatDate(parseDate(x.date))}${x.gang?" • "+esc(x.gang):""}</div>${x.job?`<p><b>Job:</b> ${esc(x.job)}</p>`:""}${x.vehicle?`<p><b>Vehicle:</b> ${esc(x.vehicle)}</p>`:""}<div class="small">Vehicle check: ${x.check?"Completed":"Not recorded"}</div><label>Day</label><select style="width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;border-radius:9px;font-size:16px;background:#fff" onchange="updateAttendance('${x.uid}','dayType',this.value)"><option ${(!x.dayType||x.dayType==="Full Day")?"selected":""}>Full Day</option><option ${x.dayType==="Half Day"?"selected":""}>Half Day</option><option ${x.dayType==="Custom Hours"?"selected":""}>Custom Hours</option></select>${x.dayType==="Custom Hours"?`<label>Hours worked</label><input type="number" step="0.5" min="0" value="${esc(x.hours||"")}" onchange="updateAttendance('${x.uid}','hours',this.value)">`:""}<label>Overtime hours</label><input type="number" step="0.5" min="0" value="${esc(x.overtime||"")}" onchange="updateAttendance('${x.uid}','overtime',this.value)"><label>Notes / reason</label><input value="${esc(x.notes||"")}" onchange="updateAttendance('${x.uid}','notes',this.value)"><button class="delete" onclick="deleteAttendance('${x.uid}')">Delete</button></div>`).join(""):`<div class="card">No attendance recorded yet.</div>`
+ refreshEmployeeNames();
+ const a=[...db.attendance].filter(x=>x&&x.name&&x.date).sort((x,y)=>String(y.date).localeCompare(String(x.date)));
+ if(!a.length){attendanceList.innerHTML=`<div class="card">No attendance recorded yet.</div>`;return}
+ const groups={};a.forEach(x=>{const k=x.name.trim();(groups[k]||(groups[k]=[])).push(x)});
+ attendanceList.innerHTML=Object.keys(groups).sort((a,b)=>a.localeCompare(b)).map((name,i)=>{
+  const rows=groups[name],total=rows.reduce((n,x)=>n+attendanceValue(x),0),ot=rows.reduce((n,x)=>n+Number(x.overtime||0),0),id=`person_${i}`;
+  const details=rows.map(x=>`<div style="border-top:1px solid #e5e7eb;padding-top:10px;margin-top:10px"><b>${formatDate(parseDate(x.date))}</b>${x.gang?` <span class="small">• ${esc(x.gang)}</span>`:""}${x.job?`<p><b>Job:</b> ${esc(x.job)}</p>`:""}${x.vehicle?`<p><b>Vehicle:</b> ${esc(x.vehicle)}</p>`:""}<div class="small">Vehicle check: ${x.check?"Completed":"Not recorded"}</div><label>Day</label><select style="width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;border-radius:9px;font-size:16px;background:#fff" onchange="updateAttendance('${x.uid}','dayType',this.value)"><option ${(!x.dayType||x.dayType==="Full Day")?"selected":""}>Full Day</option><option ${x.dayType==="Half Day"?"selected":""}>Half Day</option><option ${x.dayType==="Custom Hours"?"selected":""}>Custom Hours</option></select>${x.dayType==="Custom Hours"?`<label>Hours worked</label><input type="number" step="0.5" min="0" value="${esc(x.hours||"")}" onchange="updateAttendance('${x.uid}','hours',this.value)">`:""}<label>Overtime hours</label><input type="number" step="0.5" min="0" value="${esc(x.overtime||"")}" onchange="updateAttendance('${x.uid}','overtime',this.value)"><label>Notes / reason</label><input value="${esc(x.notes||"")}" onchange="updateAttendance('${x.uid}','notes',this.value)"><button class="delete" onclick="deleteAttendance('${x.uid}')">Delete this day</button></div>`).join("");
+  return `<div class="card"><button class="action" style="margin:0;text-align:left" onclick="togglePerson('${id}')"><b>${esc(name)}</b><br><span class="small">${rows.length} attendance record${rows.length===1?"":"s"} • ${Number.isInteger(total)?total:total.toFixed(2)} days${ot?` • ${ot} hrs OT`:""} — tap to open</span></button><div id="${id}" style="display:none">${details}</div></div>`
+ }).join("")
 }
-function deleteAttendance(uid){if(!confirm("Delete this attendance entry?"))return;db.attendance=db.attendance.filter(x=>String(x.uid)!==String(uid));saveDB();renderAttendance()}
+function deleteAttendance(uid){if(!confirm("Delete this attendance entry?"))return;db.attendance=db.attendance.filter(x=>String(x.uid)!==String(uid));saveDB();refreshEmployeeNames();renderAttendance()}
+function exportBackup(){const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`telnik-scaff-backup-${isoDate(new Date())}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function importBackup(file){if(!file)return;const r=new FileReader();r.onload=()=>{try{const data=JSON.parse(r.result);if(!data||typeof data!=="object")throw new Error();if(!confirm("Restore this Telnik backup? This will replace the data currently stored in the app.")){backupFile.value="";return}localStorage.setItem("telnikScaffDB",JSON.stringify(data));alert("Backup restored. The app will now reload.");location.reload()}catch(e){alert("That file is not a valid Telnik backup.");backupFile.value=""}};r.readAsText(file)}
 
 function startOfWeek(s){const d=parseDate(s);const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return d}
 function isoDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
