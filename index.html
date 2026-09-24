@@ -12,7 +12,7 @@ nav{display:flex;overflow-x:auto;background:#fff;border-bottom:1px solid #ddd;po
 main{max-width:900px;margin:auto;padding:16px}.page{display:none}.page.active{display:block}h2{margin:4px 0 14px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px}.stat{text-align:center;cursor:pointer}.stat .number{font-size:32px;font-weight:900}.danger{color:#dc2626}.warning{color:#d97706}.good{color:#15803d}
 button.primary,.action{width:100%;border:0;border-radius:10px;padding:13px;font-size:16px;font-weight:800;cursor:pointer;margin-top:8px}.primary{background:#111827;color:#fff}.action{background:#f59e0b;color:#111827}.secondary{border:1px solid #ccc;background:#fff;border-radius:9px;padding:10px 12px;font-weight:700;cursor:pointer}.delete{border:0;background:#fee2e2;color:#991b1b;border-radius:9px;padding:10px;font-weight:700;cursor:pointer}
-input,textarea,select{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;border-radius:9px;font-size:16px;background:#fff}textarea{min-height:90px;resize:vertical}label{font-weight:700;font-size:14px}.job-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.small{font-size:13px;color:#6b7280}.badge{display:inline-block;padding:5px 8px;border-radius:20px;font-size:12px;font-weight:800;margin-top:5px}.badge.red{background:#fee2e2;color:#991b1b}.badge.amber{background:#fef3c7;color:#92400e}.badge.green{background:#dcfce7;color:#166534}.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.photo-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}.check{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee}.check input{width:auto;margin-top:3px}hr{border:0;border-top:1px solid #eee;margin:16px 0}.rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 12px}
+input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;border-radius:9px;font-size:16px;background:#fff}textarea{min-height:90px;resize:vertical}label{font-weight:700;font-size:14px}.job-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.small{font-size:13px;color:#6b7280}.badge{display:inline-block;padding:5px 8px;border-radius:20px;font-size:12px;font-weight:800;margin-top:5px}.badge.red{background:#fee2e2;color:#991b1b}.badge.amber{background:#fef3c7;color:#92400e}.badge.green{background:#dcfce7;color:#166534}.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.photo-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}.check{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #eee}.check input{width:auto;margin-top:3px}hr{border:0;border-top:1px solid #eee;margin:16px 0}.rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:6px 0 12px}
 .rate-btn{border:1px solid #d1d5db;background:#fff;border-radius:9px;padding:11px 6px;font-weight:800;cursor:pointer}
 .rate-btn.selected{background:#111827;color:#fff;border-color:#111827}
 .pulled{border:2px solid #dc2626}.history-item{padding:10px 0;border-bottom:1px solid #eee}.history-item:last-child{border-bottom:0}
@@ -72,10 +72,16 @@ input,textarea,select{width:100%;padding:12px;margin:6px 0 12px;border:1px solid
 <button class="rate-btn" type="button" onclick="setRate(50,this)">£50<br><span class="small">London</span></button>
 <button class="rate-btn" type="button" onclick="setRate(60,this)">£60<br><span class="small">London+</span></button></div>
 <label>Rate per m² (£)</label><input id="rate" type="number" value="35" oninput="calculatePrice()">
-<hr><h3>Running costs & travel</h3>
+<hr><h3>Journey from yard</h3>
+<div class="small">Enter the yard postcode once, then the job postcode. The app works out the driving distance and return travel time automatically.</div>
+<label>Yard postcode</label><input id="yardPostcode" placeholder="e.g. HP..." autocomplete="postal-code">
+<label>Job postcode</label><input id="jobPostcode" placeholder="Job postcode" autocomplete="postal-code">
+<button class="action" type="button" onclick="calculateJourney()">GET JOURNEY DISTANCE &amp; TIME</button>
+<div id="journeyResult" class="small" style="margin-top:10px"></div>
+<hr><h3>Running costs &amp; travel</h3>
 <div class="small">Lee's current allowance: £500 overhead + £500 wages per gang per full day. The calculator apportions that £1,000 across an 8-hour day.</div>
 <label>Hours on site</label><input id="siteHours" type="number" min="0" step="0.25" value="0" oninput="calculatePrice()">
-<label>Travel time — yard → site → yard (hours total)</label><input id="travelHours" type="number" min="0" step="0.25" value="0" oninput="calculatePrice()">
+<label>Travel time — yard → site → yard (hours total)</label><input id="travelHours" type="number" min="0" step="0.01" value="0" oninput="calculatePrice()">
 <label>Fuel — full return journey (£)</label><input id="fuelCost" type="number" min="0" step="1" value="0" oninput="calculatePrice()">
 <label>Other job extras (£)</label><input id="extras" type="number" min="0" step="1" value="0" oninput="calculatePrice()">
 <label>Overhead per gang / day (£)</label><input id="overheadDay" type="number" min="0" step="10" value="500" oninput="calculatePrice()">
@@ -86,7 +92,7 @@ input,textarea,select{width:100%;padding:12px;margin:6px 0 12px;border:1px solid
 <div class="small">Chargeable area (length × lifts)</div><div style="font-size:24px;font-weight:900" id="areaResult">0 m²</div>
 <div id="costBreakdown" class="card" style="margin-top:12px;background:#f9fafb"></div>
 <div class="small">Suggested quote incl. 20% target profit</div><div style="font-size:32px;font-weight:900" id="priceResult">£400</div>
-<div class="small">Minimum job price £400. Travel is entered as the complete yard → site → yard journey. Change the allowances above if Lee changes the figures.</div></div></section>
+<div class="small">Minimum job price £400. Journey time is calculated as yard → site → yard. Fuel remains editable so you can use the real lorry cost.</div></div></section>
 
 <section id="attendance" class="page"><h2>Attendance</h2><div class="card">
 <label>Date</label><input id="attDate" type="date">
@@ -156,22 +162,40 @@ async function saveChecklist(){
  alert("Site visit checklist saved.");checkSite.value="";checkPrice.value="";checkStage.value="site-visit";checkPhotos.value="";measurements.value="";checkNotes.value="";renderChecklist();
 }
 
-
 function setRate(v,btn){
- const rateEl=document.getElementById("rate");
- rateEl.value=v;
- document.querySelectorAll(".rate-btn").forEach(b=>b.classList.remove("selected"));
- if(btn)btn.classList.add("selected");
- calculatePrice();
+ const rateEl=document.getElementById("rate");rateEl.value=v;
+ document.querySelectorAll(".rate-btn").forEach(b=>b.classList.remove("selected"));if(btn)btn.classList.add("selected");calculatePrice();
 }
 function money(v){return "£"+Math.round(v).toLocaleString("en-GB")}
+let journeyMiles=0;
+async function postcodePoint(pc){
+ const clean=String(pc||"").trim().toUpperCase();if(!clean)throw new Error("Enter both postcodes first.");
+ const r=await fetch("https://api.postcodes.io/postcodes/"+encodeURIComponent(clean));
+ const j=await r.json();if(!r.ok||!j.result)throw new Error("Postcode not found: "+clean);
+ return {lat:j.result.latitude,lon:j.result.longitude,postcode:j.result.postcode};
+}
+async function calculateJourney(){
+ const yard=document.getElementById("yardPostcode"),job=document.getElementById("jobPostcode"),out=document.getElementById("journeyResult");
+ const y=yard.value.trim(),j=job.value.trim();if(!y||!j){alert("Enter the yard postcode and job postcode first.");return}
+ out.textContent="Working out the route…";
+ try{
+  localStorage.setItem("telnikYardPostcode",y.toUpperCase());
+  const [a,b]=await Promise.all([postcodePoint(y),postcodePoint(j)]);
+  const url=`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false&steps=false`;
+  const rr=await fetch(url),route=await rr.json();if(!rr.ok||route.code!=="Ok"||!route.routes?.length)throw new Error("Driving route could not be calculated.");
+  const oneMiles=route.routes[0].distance/1609.344,returnMiles=oneMiles*2,returnHours=(route.routes[0].duration*2)/3600;
+  journeyMiles=returnMiles;document.getElementById("travelHours").value=returnHours.toFixed(2);
+  out.innerHTML=`<b>${oneMiles.toFixed(1)} miles each way • ${returnMiles.toFixed(1)} miles return</b><br>Estimated return driving time: ${returnHours.toFixed(2)} hours`;
+  calculatePrice();
+ }catch(e){out.textContent="";alert(e.message+" You can still enter the travel time manually.")}
+}
 function calculatePrice(){
  const val=id=>parseFloat(document.getElementById(id)?.value)||0;
  const l=val("length"),lf=val("lifts"),r=val("rate"),e=val("extras"),site=val("siteHours"),travel=val("travelHours"),fuel=val("fuelCost"),oh=val("overheadDay"),wages=val("wagesDay"),day=val("dayHours")||8,profit=val("profitPct");
  const area=l*lf,scaffold=area*r,totalHours=site+travel,hourlyGang=(oh+wages)/day,running=totalHours*hourlyGang;
  const costBeforeProfit=scaffold+running+fuel+e,profitAmount=costBeforeProfit*(profit/100);let quote=costBeforeProfit+profitAmount;if(quote<400)quote=400;
  areaResult.textContent=area.toFixed(1)+" m²";priceResult.textContent=money(quote);
- const b=document.getElementById("costBreakdown");if(b)b.innerHTML=`<b>Cost breakdown</b><div class="small" style="line-height:1.8;margin-top:6px">Scaffold: ${money(scaffold)}<br>Gang running cost: ${totalHours.toFixed(2)} hrs × ${money(hourlyGang)}/hr = ${money(running)}<br>Fuel (yard → site → yard): ${money(fuel)}<br>Extras: ${money(e)}<br><b>Subtotal before profit: ${money(costBeforeProfit)}</b><br>Profit (${profit}%): ${money(profitAmount)}</div>`;
+ const b=document.getElementById("costBreakdown");if(b)b.innerHTML=`<b>Cost breakdown</b><div class="small" style="line-height:1.8;margin-top:6px">Scaffold: ${money(scaffold)}<br>${journeyMiles?`Return journey: ${journeyMiles.toFixed(1)} miles<br>`:""}Gang running cost: ${totalHours.toFixed(2)} hrs × ${money(hourlyGang)}/hr = ${money(running)}<br>Fuel (yard → site → yard): ${money(fuel)}<br>Extras: ${money(e)}<br><b>Subtotal before profit: ${money(costBeforeProfit)}</b><br>Profit (${profit}%): ${money(profitAmount)}</div>`;
 }
 function esc(s){return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 
@@ -186,19 +210,11 @@ function attendanceWeekRows(name){
  const ref=payrollWeek.value||isoDate(new Date()),start=startOfWeek(ref),end=new Date(start);end.setDate(end.getDate()+6);
  return db.attendance.filter(x=>x.name.trim()===name&&x.date>=isoDate(start)&&x.date<=isoDate(end)).sort((a,b)=>a.date.localeCompare(b.date));
 }
-function attendanceDayValue(x){
- if((x.dayType||"Full Day")==="Half Day")return .5;
- if((x.dayType||"Full Day")==="Custom Hours")return (parseFloat(x.hours)||0)/8;
- return 1;
-}
+function attendanceDayValue(x){if((x.dayType||"Full Day")==="Half Day")return .5;if((x.dayType||"Full Day")==="Custom Hours")return (parseFloat(x.hours)||0)/8;return 1}
 function renderAttendance(){
  const ref=payrollWeek.value||isoDate(new Date()),start=startOfWeek(ref),end=new Date(start);end.setDate(end.getDate()+6);
- const rows=db.attendance.filter(x=>x.date>=isoDate(start)&&x.date<=isoDate(end));
- const names=[...new Set(rows.map(x=>x.name.trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
- attendanceList.innerHTML=names.length?names.map(name=>{
-  const r=attendanceWeekRows(name),days=r.reduce((n,x)=>n+attendanceDayValue(x),0),ot=r.reduce((n,x)=>n+(parseFloat(x.overtime)||0),0);
-  return `<div class="card"><div class="job-head"><div><b style="font-size:19px">${esc(name)}</b><div class="small">Week: ${formatDate(start)} - ${formatDate(end)}</div></div><div style="text-align:right"><b>${days.toFixed(days%1?1:0)} days</b>${ot?`<div class="small">${ot} hrs OT</div>`:""}</div></div><button class="action" onclick="viewAttendanceWeek('${encodeURIComponent(name)}')">VIEW WEEK</button></div>`;
- }).join(""):`<div class="card">No attendance recorded for this week.</div>`;
+ const rows=db.attendance.filter(x=>x.date>=isoDate(start)&&x.date<=isoDate(end));const names=[...new Set(rows.map(x=>x.name.trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+ attendanceList.innerHTML=names.length?names.map(name=>{const r=attendanceWeekRows(name),days=r.reduce((n,x)=>n+attendanceDayValue(x),0),ot=r.reduce((n,x)=>n+(parseFloat(x.overtime)||0),0);return `<div class="card"><div class="job-head"><div><b style="font-size:19px">${esc(name)}</b><div class="small">Week: ${formatDate(start)} - ${formatDate(end)}</div></div><div style="text-align:right"><b>${days.toFixed(days%1?1:0)} days</b>${ot?`<div class="small">${ot} hrs OT</div>`:""}</div></div><button class="action" onclick="viewAttendanceWeek('${encodeURIComponent(name)}')">VIEW WEEK</button></div>`}).join(""):`<div class="card">No attendance recorded for this week.</div>`;
 }
 function viewAttendanceWeek(encodedName){
  const name=decodeURIComponent(encodedName),rows=attendanceWeekRows(name);
@@ -253,7 +269,7 @@ function deleteIdea(uid){if(!confirm("Delete this idea?"))return;db.ideas=db.ide
 
 if(document.getElementById("attDate")){const n=new Date();attDate.value=isoDate(n);if(document.getElementById("payrollWeek"))payrollWeek.value=isoDate(n);}
 window.addEventListener("online",updateSyncStatus);window.addEventListener("offline",updateSyncStatus);updateSyncStatus();
-["length","lifts","rate","extras","siteHours","travelHours","fuelCost","overheadDay","wagesDay","dayHours","profitPct"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",calculatePrice)});renderChecklist();renderDashboard();renderScaffolds();renderAttendance();renderTasks();renderIdeas();calculatePrice();
+["length","lifts","rate","extras","siteHours","travelHours","fuelCost","overheadDay","wagesDay","dayHours","profitPct"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",calculatePrice)});const yp=document.getElementById("yardPostcode");if(yp)yp.value=localStorage.getItem("telnikYardPostcode")||"";renderChecklist();renderDashboard();renderScaffolds();renderAttendance();renderTasks();renderIdeas();calculatePrice();
 </script>
 </body>
 </html>
