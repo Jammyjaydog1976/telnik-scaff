@@ -72,27 +72,11 @@ input,textarea{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;b
 <button class="rate-btn" type="button" onclick="setRate(50,this)">£50<br><span class="small">London</span></button>
 <button class="rate-btn" type="button" onclick="setRate(60,this)">£60<br><span class="small">London+</span></button></div>
 <label>Rate per m² (£)</label><input id="rate" type="number" value="35" oninput="calculatePrice()">
-<hr><h3>Journey from yard</h3>
-<div class="small">Enter the yard postcode once, then the job postcode. The app works out the driving distance and return travel time automatically.</div>
-<label>Yard postcode</label><input id="yardPostcode" placeholder="e.g. HP..." autocomplete="postal-code">
-<label>Job postcode</label><input id="jobPostcode" placeholder="Job postcode" autocomplete="postal-code">
-<button class="action" type="button" onclick="calculateJourney()">GET JOURNEY DISTANCE &amp; TIME</button>
-<div id="journeyResult" class="small" style="margin-top:10px"></div>
-<hr><h3>Running costs &amp; travel</h3>
-<div class="small">Lee's current allowance: £500 overhead + £500 wages per gang per full day. The calculator apportions that £1,000 across an 8-hour day.</div>
-<label>Hours on site</label><input id="siteHours" type="number" min="0" step="0.25" value="0" oninput="calculatePrice()">
-<label>Travel time — yard → site → yard (hours total)</label><input id="travelHours" type="number" min="0" step="0.01" value="0" oninput="calculatePrice()">
-<label>Fuel — full return journey (£)</label><input id="fuelCost" type="number" min="0" step="1" value="0" oninput="calculatePrice()">
-<label>Other job extras (£)</label><input id="extras" type="number" min="0" step="1" value="0" oninput="calculatePrice()">
-<label>Overhead per gang / day (£)</label><input id="overheadDay" type="number" min="0" step="10" value="500" oninput="calculatePrice()">
-<label>Wages per gang / day (£)</label><input id="wagesDay" type="number" min="0" step="10" value="500" oninput="calculatePrice()">
-<label>Working day (hours)</label><input id="dayHours" type="number" min="1" step="0.5" value="8" oninput="calculatePrice()">
-<label>Target profit (%)</label><input id="profitPct" type="number" min="0" step="1" value="20" oninput="calculatePrice()">
+<label>Extras (£)</label><input id="extras" type="number" value="0" oninput="calculatePrice()">
 <button class="action" type="button" onclick="calculatePrice()">CALCULATE PRICE</button><hr>
 <div class="small">Chargeable area (length × lifts)</div><div style="font-size:24px;font-weight:900" id="areaResult">0 m²</div>
-<div id="costBreakdown" class="card" style="margin-top:12px;background:#f9fafb"></div>
-<div class="small">Suggested quote incl. 20% target profit</div><div style="font-size:32px;font-weight:900" id="priceResult">£400</div>
-<div class="small">Minimum job price £400. Journey time is calculated as yard → site → yard. Fuel remains editable so you can use the real lorry cost.</div></div></section>
+<div class="small" style="margin-top:12px">Suggested Price</div><div style="font-size:32px;font-weight:900" id="priceResult">£400</div>
+<div class="small">Minimum job price £400. Use the rate that fits the location/job. Extras are added after the area calculation.</div></div></section>
 
 <section id="attendance" class="page"><h2>Attendance</h2><div class="card">
 <label>Date</label><input id="attDate" type="date">
@@ -166,36 +150,11 @@ function setRate(v,btn){
  const rateEl=document.getElementById("rate");rateEl.value=v;
  document.querySelectorAll(".rate-btn").forEach(b=>b.classList.remove("selected"));if(btn)btn.classList.add("selected");calculatePrice();
 }
-function money(v){return "£"+Math.round(v).toLocaleString("en-GB")}
-let journeyMiles=0;
-async function postcodePoint(pc){
- const clean=String(pc||"").trim().toUpperCase();if(!clean)throw new Error("Enter both postcodes first.");
- const r=await fetch("https://api.postcodes.io/postcodes/"+encodeURIComponent(clean));
- const j=await r.json();if(!r.ok||!j.result)throw new Error("Postcode not found: "+clean);
- return {lat:j.result.latitude,lon:j.result.longitude,postcode:j.result.postcode};
-}
-async function calculateJourney(){
- const yard=document.getElementById("yardPostcode"),job=document.getElementById("jobPostcode"),out=document.getElementById("journeyResult");
- const y=yard.value.trim(),j=job.value.trim();if(!y||!j){alert("Enter the yard postcode and job postcode first.");return}
- out.textContent="Working out the route…";
- try{
-  localStorage.setItem("telnikYardPostcode",y.toUpperCase());
-  const [a,b]=await Promise.all([postcodePoint(y),postcodePoint(j)]);
-  const url=`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false&steps=false`;
-  const rr=await fetch(url),route=await rr.json();if(!rr.ok||route.code!=="Ok"||!route.routes?.length)throw new Error("Driving route could not be calculated.");
-  const oneMiles=route.routes[0].distance/1609.344,returnMiles=oneMiles*2,returnHours=(route.routes[0].duration*2)/3600;
-  journeyMiles=returnMiles;document.getElementById("travelHours").value=returnHours.toFixed(2);
-  out.innerHTML=`<b>${oneMiles.toFixed(1)} miles each way • ${returnMiles.toFixed(1)} miles return</b><br>Estimated return driving time: ${returnHours.toFixed(2)} hours`;
-  calculatePrice();
- }catch(e){out.textContent="";alert(e.message+" You can still enter the travel time manually.")}
-}
 function calculatePrice(){
  const val=id=>parseFloat(document.getElementById(id)?.value)||0;
- const l=val("length"),lf=val("lifts"),r=val("rate"),e=val("extras"),site=val("siteHours"),travel=val("travelHours"),fuel=val("fuelCost"),oh=val("overheadDay"),wages=val("wagesDay"),day=val("dayHours")||8,profit=val("profitPct");
- const area=l*lf,scaffold=area*r,totalHours=site+travel,hourlyGang=(oh+wages)/day,running=totalHours*hourlyGang;
- const costBeforeProfit=scaffold+running+fuel+e,profitAmount=costBeforeProfit*(profit/100);let quote=costBeforeProfit+profitAmount;if(quote<400)quote=400;
- areaResult.textContent=area.toFixed(1)+" m²";priceResult.textContent=money(quote);
- const b=document.getElementById("costBreakdown");if(b)b.innerHTML=`<b>Cost breakdown</b><div class="small" style="line-height:1.8;margin-top:6px">Scaffold: ${money(scaffold)}<br>${journeyMiles?`Return journey: ${journeyMiles.toFixed(1)} miles<br>`:""}Gang running cost: ${totalHours.toFixed(2)} hrs × ${money(hourlyGang)}/hr = ${money(running)}<br>Fuel (yard → site → yard): ${money(fuel)}<br>Extras: ${money(e)}<br><b>Subtotal before profit: ${money(costBeforeProfit)}</b><br>Profit (${profit}%): ${money(profitAmount)}</div>`;
+ const l=val("length"),lf=val("lifts"),r=val("rate"),e=val("extras"),area=l*lf;
+ let price=area*r+e;if(price<400)price=400;
+ areaResult.textContent=area.toFixed(1)+" m²";priceResult.textContent="£"+Math.round(price).toLocaleString("en-GB");
 }
 function esc(s){return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 
@@ -269,7 +228,7 @@ function deleteIdea(uid){if(!confirm("Delete this idea?"))return;db.ideas=db.ide
 
 if(document.getElementById("attDate")){const n=new Date();attDate.value=isoDate(n);if(document.getElementById("payrollWeek"))payrollWeek.value=isoDate(n);}
 window.addEventListener("online",updateSyncStatus);window.addEventListener("offline",updateSyncStatus);updateSyncStatus();
-["length","lifts","rate","extras","siteHours","travelHours","fuelCost","overheadDay","wagesDay","dayHours","profitPct"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",calculatePrice)});const yp=document.getElementById("yardPostcode");if(yp)yp.value=localStorage.getItem("telnikYardPostcode")||"";renderChecklist();renderDashboard();renderScaffolds();renderAttendance();renderTasks();renderIdeas();calculatePrice();
+["length","lifts","rate","extras"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",calculatePrice)});renderChecklist();renderDashboard();renderScaffolds();renderAttendance();renderTasks();renderIdeas();calculatePrice();
 </script>
 </body>
 </html>
